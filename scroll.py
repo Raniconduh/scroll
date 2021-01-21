@@ -4,6 +4,8 @@ import readchar
 import os
 import subprocess
 import stat
+from sys import argv
+import time
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -259,6 +261,7 @@ def scroll():
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and isdir(dir_contents[cursor]):
             if dir_contents[cursor] == "../":
                 cdback()
+                cursor = 0
 
             else:
                 cd += dir_contents[cursor]
@@ -269,6 +272,7 @@ def scroll():
 
         elif key_pressed == readchar.key.LEFT and cd != '/':
             cdback()
+            cursor = 0
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]):
@@ -277,6 +281,24 @@ def scroll():
             cursor = 0
             list_files()
 
+def help_menu():
+    print(
+            "Scroll file manager\n"
+            "Manage files using scroll; the console file manager\n"
+            "\n"
+            "Use:\n"
+            "  scroll [OPTION] [DIR]\n"
+            "  Run scroll with one of the optional options or an optional directory\n"
+            "\n"
+            "Options:\n"
+            "  -h, --help\t\tPrint this screen and exit\n"
+            )
+
+
+if len(argv) > 1:
+    if argv[1] == "--help" or argv[1] == "-h":
+        help_menu()
+        quit()
 
 scroll()
 
