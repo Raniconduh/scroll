@@ -271,7 +271,7 @@ def scroll():
             cdback()
 
         # enter pressed on anything other than a dir
-        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT:
+        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]):
             file_options(dir_contents[cursor])
             dir_contents = []
             cursor = 0
