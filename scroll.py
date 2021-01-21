@@ -29,6 +29,8 @@ dir_contents = []
 cd = os.getenv("PWD") + '/'
 #home_dir = os.getenv("HOME")
 
+PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
+
 
 def list_files():
     dir_contents.append("../")
@@ -74,16 +76,43 @@ def isascii(item):
     return False
 
 
+def get_file_ext(item):
+    item_split = item.split('.')
+    if len(item_split) == 1:
+        return None
+    return item_split[-1]
+
+
 # print a file name based on what kind of file it is
-def print_file_name(item, end='\n'):
+def print_file_name(item, highlight=False, end='\n'):
     if isdir(item):
-        print(BLUE + item[:-1] + RESET + item[-1], end=end)
+        if highlight:
+            print(HBLUE + BLACK + item[:-1] + RESET + item[-1], end=end)
+        else:
+            print(BLUE + item[:-1] + RESET + item[-1], end=end)
+
     elif issymlink(item):
-        print(CYAN + item[:-1] + RESET + item[-1], end=end)
+        if highlight:
+            print(HCYAN + BLACK + item[:-1] + RESET + item[-1], end=end)
+        else:
+            print(CYAN + item[:-1] + RESET + item[-1], end=end)
+
     elif isexec(item):
-        print(GREEN + item[:-1] + RESET + item[-1], end=end)
+        if highlight:
+            print(HGREEN + BLACK + item[:-1] + RESET + item[-1], end=end)
+        else:
+            print(GREEN + item[:-1] + RESET + item[-1], end=end)
+
+    elif get_file_ext(item) in PHOTO_EXTENSIONS:
+        if highlight:
+            print(HPURPLE + BLACK + item + RESET, end=end)
+        else:
+            print(PURPLE + item + RESET, end=end)
     else:
-        print(item, end=end)
+        if highlight:
+            print(HWHITE + BLACK + item + RESET, end=end)
+        else:
+            print(item, end=end)
 
 
 def file_options(item):
@@ -177,30 +206,11 @@ def scroll():
 
             # print the name of the file with colors in accordance
             # to where the cursor is and what kind of file it is
-            if isdir(item_name):
-                if cursor == item_index:
-                    print(HBLUE + WHITE + item_name[:-1] + RESET + item_name[-1])
-                else:
-                    print(BLUE + item_name[:-1] + RESET + item_name[-1])
-            
-            elif issymlink(item_name):
-                if cursor == item_index:
-                    print(HCYAN + WHITE + item_name[:-1] + RESET + item_name[-1])
-                else:
-                    print(CYAN + item_name[:-1] + RESET + item_name[-1])
-
-            elif isexec(item_name):
-                if cursor == item_index:
-                    print(HGREEN + WHITE + item_name[:-1] + RESET + item_name[-1])
-                else:
-                    print(GREEN + item_name[:-1] + RESET + item_name[-1])
-
+            if cursor == item_index:
+                print_file_name(dir_contents[item_index], highlight=True)
             else:
-                if cursor == item_index:
-                    print(HCYAN + item_name + RESET)
-                else:
-                    print(item_name)
-
+                print_file_name(dir_contents[item_index])
+            
         key_pressed = readchar.readkey()
 
         # cd into .. without uglying the path
