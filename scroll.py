@@ -3,6 +3,7 @@
 import readchar
 import os
 import subprocess
+import stat
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -46,6 +47,9 @@ def list_files():
         elif os.access(item.path, os.X_OK):
             dir_contents.append(item.name + "*")
 
+        elif stat.S_ISFIFO(os.stat(item.path).st_mode):
+            dir_contents.append(item.name + "|")
+
         else:
             dir_contents.append(item.name)
 
@@ -77,7 +81,14 @@ def isascii(item):
         return True
     return False
 
+def isfifo(item):
+    if item[-1] == "|":
+        return True
+    return False
 
+# return the extension of the file
+# e.g. 'file.txt' will return txt
+# no extension e.g. 'file' will return None
 def get_file_ext(item):
     item_split = item.split('.')
     if len(item_split) == 1:
@@ -110,6 +121,12 @@ def print_file_name(item, highlight=False, end='\n'):
             print(HPURPLE + BLACK + item + RESET, end=end)
         else:
             print(PURPLE + item + RESET, end=end)
+            
+    elif isfifo(item):
+        if highlight:
+            print(HYELLOW + BLACK + item[:-1] + RESET + item[-1])
+        else:
+            print(YELLOW + item[:-1] + RESET + item[-1])
     else:
         if highlight:
             print(HWHITE + BLACK + item + RESET, end=end)
