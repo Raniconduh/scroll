@@ -35,6 +35,7 @@ cd = os.getenv("PWD") + '/'
 #home_dir = os.getenv("HOME")
 
 PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
+ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
 
 
 def list_files():
@@ -107,7 +108,7 @@ def get_file_ext(item):
     item_split = item.split('.')
     if len(item_split) == 1:
         return None
-    return item_split[-1]
+    return item_split[-1].lower()
 
 
 # print a file name based on what kind of file it is
@@ -141,6 +142,12 @@ def print_file_name(item, highlight=False, end='\n'):
             print(HYELLOW + BLACK + item[:-1] + RESET + item[-1])
         else:
             print(YELLOW + item[:-1] + RESET + item[-1])
+
+    elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
+        if highlight:
+            print(HRED + BLACK + item + RESET, end=end)
+        else:
+            print(RED + item + RESET, end=end)
     else:
         if highlight:
             print(HWHITE + BLACK + item + RESET, end=end)
@@ -245,6 +252,8 @@ def scroll():
             else:
                 print_file_name(item)
 
+        print("\n" + str(cursor + 1) + "/" + str(len(dir_contents)))
+
         key_pressed = readchar.readkey()
 
         if cursor == last_file - 3 and last_file < len(dir_contents):
@@ -253,9 +262,6 @@ def scroll():
         elif cursor == first_file + 2 and first_file > 0 and last_file > 9:
             first_file -= 1
             last_file -= 1
-
-        print("First file: " + str(first_file))
-        print("last file: " + str(last_file))
 
         # cd into .. without uglying the path
         def cdback():
@@ -329,6 +335,31 @@ if len(argv) > 1:
     if argv[1] == "--help" or argv[1] == "-h":
         help_menu()
         quit()
+    elif argv[1] == "..":
+        cd = cd.split('/')
+        cd = cd[:-2]
+        cd = '/'.join(cd)
+        cd += '/'
+        print(cd); quit()
+    elif len(argv[1]) > 2 and argv[:2] == "..":
+        if argv[1][0] == '.' and argv[1][1] == '.' and argv[1][2] == '/':
+            cd = cd.split('/')
+            cd = cd[:-2]
+
+            tmp_argv = argv[1].split("/")
+
+            for segment in tmp_argv[1:]:
+                cd.append(segment)
+
+            cd = '/'.join(cd)
+            cd += '/'
+    elif argv[1] == "~" or argv[:2] == "~/":
+        cd = os.path.expanduser(argv[1])
+        print(argv[1])
+
+    else:
+        cd = argv[1] + '/'
+
 
 scroll()
 
