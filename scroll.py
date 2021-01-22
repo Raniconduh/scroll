@@ -5,7 +5,6 @@ import os
 import subprocess
 import stat
 from sys import argv
-import time
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -38,6 +37,7 @@ PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
 
 
+# list and store all the files in dir
 def list_files():
     tmp_contents = {"dirs":[], "files":[]}
 
@@ -96,6 +96,8 @@ def isascii(item):
         return True
     return False
 
+# check if file is fifo aka named pipe
+# files ending with '|' are fifos
 def isfifo(item):
     if item[-1] == "|":
         return True
@@ -165,7 +167,7 @@ def file_options(item):
 
         for option in options:
             if options.index(option) == cursor:
-                print(HCYAN + option + RESET)
+                print(HWHITE + BLACK + option + RESET)
             else:
                 print(option)
 
