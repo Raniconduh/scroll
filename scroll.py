@@ -237,9 +237,11 @@ def scroll():
     global dir_contents
     global cd
 
+    term_size = os.get_terminal_size()
+
     first_file = 0
     last_file = 1
-    last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+    last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
     while True:
         print(CLEAR)
@@ -300,13 +302,14 @@ def scroll():
                 cursor = 0
 
             first_file = 0
-            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
         elif key_pressed == readchar.key.LEFT and cd != '/':
             cdback()
             cursor = 0
             first_file = 0
-            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]):
@@ -315,7 +318,8 @@ def scroll():
             cursor = 0
             list_files()
             first_file = 0
-            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+
 
 def help_menu():
     print(
