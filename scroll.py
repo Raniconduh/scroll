@@ -227,24 +227,35 @@ def scroll():
 
     cursor = 0;
 
+    global dir_contents
+    global cd
+
+    first_file = 0
+    last_file = 1
+    last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+
     while True:
         print(CLEAR)
-       
-        global cd
+
         print(cd, end="\n\n")
 
-        global dir_contents
-        for item_index in range(len(dir_contents)):
-            item_name = dir_contents[item_index]
-
-            # print the name of the file with colors in accordance
-            # to where the cursor is and what kind of file it is
-            if cursor == item_index:
-                print_file_name(dir_contents[item_index], highlight=True)
+        for item in dir_contents[first_file:last_file]:
+            if cursor == dir_contents.index(item):
+                print_file_name(item, highlight=True)
             else:
-                print_file_name(dir_contents[item_index])
-            
+                print_file_name(item)
+
         key_pressed = readchar.readkey()
+
+        if cursor == last_file - 3 and last_file < len(dir_contents):
+            first_file += 1
+            last_file += 1
+        elif cursor == first_file + 2 and first_file > 0 and last_file > 9:
+            first_file -= 1
+            last_file -= 1
+
+        print("First file: " + str(first_file))
+        print("last file: " + str(last_file))
 
         # cd into .. without uglying the path
         def cdback():
@@ -282,9 +293,14 @@ def scroll():
                 list_files()
                 cursor = 0
 
+            first_file = 0
+            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
+
         elif key_pressed == readchar.key.LEFT and cd != '/':
             cdback()
             cursor = 0
+            first_file = 0
+            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]):
@@ -292,6 +308,8 @@ def scroll():
             dir_contents = []
             cursor = 0
             list_files()
+            first_file = 0
+            last_file = 10 if len(dir_contents) > 10 else len(dir_contents)
 
 def help_menu():
     print(
