@@ -38,22 +38,34 @@ PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 
 
 def list_files():
+    tmp_contents = {"dirs":[], "files":[]}
+
     dir_contents.append("../")
     for item in os.scandir(cd):
         if item.is_dir():
-            dir_contents.append(item.name + "/")
-
-        elif item.is_symlink():
-            dir_contents.append(item.name + "@")
-
-        elif os.access(item.path, os.X_OK):
-            dir_contents.append(item.name + "*")
-
-        elif stat.S_ISFIFO(os.stat(item.path).st_mode):
-            dir_contents.append(item.name + "|")
-
+            tmp_contents["dirs"].append(item.name + "/")
+        
         else:
-            dir_contents.append(item.name)
+            if item.is_symlink():
+                tmp_contents["files"].append(item.name + "@")
+
+            elif os.access(item.path, os.X_OK):
+                tmp_contents["files"].append(item.name + "*")
+
+            elif stat.S_ISFIFO(os.stat(item.path).st_mode):
+                tmp_contents["files"].append(item.name + "|")
+
+            else:
+                tmp_contents["files"].append(item.name)
+
+    tmp_contents["dirs"].sort()
+    tmp_contents["files"].sort()
+
+    for tmp_dir in tmp_contents["dirs"]:
+        dir_contents.append(tmp_dir)
+
+    for tmp_file in tmp_contents["files"]:
+        dir_contents.append(tmp_file)
 
 
 # check if a file name is a directory
