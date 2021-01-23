@@ -5,6 +5,7 @@ import os
 import subprocess
 import stat
 from sys import argv
+import curses
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -25,6 +26,8 @@ HBLUE = "\u001b[44m"
 HPURPLE = "\u001b[45m"
 HCYAN = "\u001b[46m"
 HWHITE = "\u001b[47m"
+
+CLRLINE = "\033[2K\r"
 
 
 #dir_contents = {"files": [], "dirs": [], "dotdirs": [], "dotfiles": []}
@@ -158,14 +161,18 @@ def print_file_name(item, highlight=False, end='\n'):
 
 
 def file_options(item):
+    curses.curs_set(0)
+
     cursor = 0
     options = ["View File", "Edit File", "Delete File", "Rename File"]
 
     while True:
         print(CLEAR)
+        print(CLRLINE, end='')
         print_file_name(item, end="\n\n")
 
         for option in options:
+            print(CLRLINE, end='')
             if options.index(option) == cursor:
                 print(HWHITE + BLACK + option + RESET)
             else:
@@ -203,6 +210,7 @@ def file_options(item):
                     subprocess.run(["editor", cd + item[:-1]])
 
             elif "Delete" in options[cursor]:
+                print(CLRLINE, end='')
                 print("Are you sure you want to delete this file? [y/N]", end=": ")
                 inp = input()
                 if inp.lower() == 'y':
@@ -218,9 +226,11 @@ def file_options(item):
                 else:
                     file_name = item[:-1]
 
+                print(CLRLINE, end='')
                 print("Rename file '" + file_name + "' to what? : ", end = "")
                 to_rename = input()
                 
+                print(CLRLINE, end='')
                 print("Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?", end="\n[y/N]\n")
                 user_assuredness = input()
 
@@ -232,12 +242,19 @@ def file_options(item):
 
 
 def scroll():
+    print(CLRLINE)
+    print(CLEAR)
+
+    curses.curs_set(0)
+
     list_files()
 
     cursor = 0;
 
     global dir_contents
     global cd
+
+    # scrolling = False
 
     term_size = os.get_terminal_size()
 
@@ -248,18 +265,22 @@ def scroll():
     while True:
         print(CLEAR)
 
+        print(CLRLINE, end='')
         print(cd, end="\n\n")
 
         for item in dir_contents[first_file:last_file]:
+            print(CLRLINE, end='')
             if cursor == dir_contents.index(item):
                 print_file_name(item, highlight=True)
             else:
                 print_file_name(item)
 
+        print(CLRLINE, end='')
         print("\n" + str(cursor + 1) + "/" + str(len(dir_contents)))
 
         key_pressed = readchar.readkey()
 
+        # scroll terminal if needed
         if cursor == last_file - 3 and last_file < len(dir_contents):
             first_file += 1
             last_file += 1
@@ -283,7 +304,7 @@ def scroll():
 
         # quit options
         if key_pressed == readchar.key.CTRL_C or key_pressed == 'q':
-            quit()
+            break
         # up arrow key pressed
         elif key_pressed == readchar.key.UP and cursor > 0:
             cursor -= 1
@@ -337,37 +358,49 @@ def help_menu():
             )
 
 
-if len(argv) > 1:
-    if argv[1] == "--help" or argv[1] == "-h":
-        help_menu()
-        quit()
+if __name__ == "__main__":
+    if len(argv) > 1:
+        if argv[1] == "--help" or argv[1] == "-h":
+            help_menu()
+            quit()
 
-    elif argv[1] == "..":
-        cd = cd.split('/')
-        cd = cd[:-2]
-        cd = '/'.join(cd)
-        cd += '/'
-
-    elif len(argv[1]) > 2 and argv[:2] == "..":
-        if argv[1][0] == '.' and argv[1][1] == '.' and argv[1][2] == '/':
+        elif argv[1] == "..":
             cd = cd.split('/')
             cd = cd[:-2]
-
-            tmp_argv = argv[1].split("/")
-
-            for segment in tmp_argv[1:]:
-                cd.append(segment)
-
             cd = '/'.join(cd)
             cd += '/'
 
-    elif argv[1] == "~" or argv[:2] == "~/":
-        cd = os.path.expanduser(argv[1])
-        print(argv[1])
+        elif len(argv[1]) > 2 and argv[:2] == "..":
+            if argv[1][0] == '.' and argv[1][1] == '.' and argv[1][2] == '/':
+                cd = cd.split('/')
+                cd = cd[:-2]
 
-    else:
-        cd = argv[1] + '/'
+                tmp_argv = argv[1].split("/")
 
+                for segment in tmp_argv[1:]:
+                    cd.append(segment)
 
-scroll()
+                cd = '/'.join(cd)
+                cd += '/'
+
+        elif argv[1] == "~" or argv[:2] == "~/":
+            cd = os.path.expanduser(argv[1])
+            print(argv[1])
+
+        else:
+            cd = argv[1] + '/'
+    
+    screen = curses.initscr()
+    curses.curs_set(0)
+    curses.noecho()
+    curses.cbreak()
+    # screen.keypad(True)
+
+    scroll()
+
+    # screen.keypad(False)
+    curses.nocbreak()
+    curses.echo()
+    curses.curs_set(1)
+    curses.endwin()
 
