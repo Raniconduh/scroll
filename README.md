@@ -3,5 +3,3 @@
 A small and simple console file manager
 
 ## Todo:
-
-- use curses instead
