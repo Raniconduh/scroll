@@ -46,31 +46,40 @@ def list_files():
     tmp_contents = {"dirs":[], "files":[]}
 
     dir_contents.append("../")
-    for item in os.scandir(cd):
-        if item.is_dir():
-            tmp_contents["dirs"].append(item.name + "/")
-        
-        else:
-            if item.is_symlink():
-                tmp_contents["files"].append(item.name + "@")
 
-            elif os.access(item.path, os.X_OK):
-                tmp_contents["files"].append(item.name + "*")
+    try:
+        items = os.scandir(cd)
 
-            elif stat.S_ISFIFO(os.stat(item.path).st_mode):
-                tmp_contents["files"].append(item.name + "|")
-
+        for item in items:
+            if not os.access(item, os.F_OK):
+                pass
+            elif item.is_dir():
+                tmp_contents["dirs"].append(item.name + "/")
+            
             else:
-                tmp_contents["files"].append(item.name)
+                if item.is_symlink():
+                    tmp_contents["files"].append(item.name + "@")
 
-    tmp_contents["dirs"].sort()
-    tmp_contents["files"].sort()
+                elif os.access(item.path, os.X_OK):
+                    tmp_contents["files"].append(item.name + "*")
 
-    for tmp_dir in tmp_contents["dirs"]:
-        dir_contents.append(tmp_dir)
+                elif stat.S_ISFIFO(os.stat(item.path).st_mode):
+                    tmp_contents["files"].append(item.name + "|")
 
-    for tmp_file in tmp_contents["files"]:
-        dir_contents.append(tmp_file)
+                else:
+                    tmp_contents["files"].append(item.name)
+
+        tmp_contents["dirs"].sort()
+        tmp_contents["files"].sort()
+
+        for tmp_dir in tmp_contents["dirs"]:
+            dir_contents.append(tmp_dir)
+
+        for tmp_file in tmp_contents["files"]:
+            dir_contents.append(tmp_file)
+
+    except PermissionError:
+        pass
 
 
 # check if a file name is a directory
@@ -106,6 +115,7 @@ def isfifo(item):
     if item[-1] == "|":
         return True
     return False
+
 
 # return the extension of the file
 # e.g. 'file.txt' will return txt
