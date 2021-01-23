@@ -341,12 +341,13 @@ if len(argv) > 1:
     if argv[1] == "--help" or argv[1] == "-h":
         help_menu()
         quit()
+
     elif argv[1] == "..":
         cd = cd.split('/')
         cd = cd[:-2]
         cd = '/'.join(cd)
         cd += '/'
-        print(cd); quit()
+
     elif len(argv[1]) > 2 and argv[:2] == "..":
         if argv[1][0] == '.' and argv[1][1] == '.' and argv[1][2] == '/':
             cd = cd.split('/')
@@ -359,6 +360,7 @@ if len(argv) > 1:
 
             cd = '/'.join(cd)
             cd += '/'
+
     elif argv[1] == "~" or argv[:2] == "~/":
         cd = os.path.expanduser(argv[1])
         print(argv[1])
