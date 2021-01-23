@@ -400,7 +400,7 @@ if __name__ == "__main__":
     # screen.keypad(True)
 
     try:
-        scroll
+        scroll()
     except KeyboardInterrupt:
         pass
 
