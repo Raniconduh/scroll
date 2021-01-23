@@ -52,7 +52,8 @@ def list_files():
 
         for item in items:
             if not os.access(item, os.F_OK):
-                pass
+                tmp_contents["files"].append(item.name + '?')
+
             elif item.is_dir():
                 tmp_contents["dirs"].append(item.name + "/")
             
@@ -116,6 +117,10 @@ def isfifo(item):
         return True
     return False
 
+def exists(item):
+    if item[-1] == '?':
+        return False
+    return True
 
 # return the extension of the file
 # e.g. 'file.txt' will return txt
@@ -164,6 +169,13 @@ def print_file_name(item, highlight=False, end='\n'):
             print(HRED + BLACK + item + RESET, end=end)
         else:
             print(RED + item + RESET, end=end)
+
+    elif not exists(item):
+        if highlight:
+            print(HRED + BLACK + item[:-1] + RESET + item[-1])
+        else:
+            print(RED + item[:-1] + RESET + item[-1])
+    
     else:
         if highlight:
             print(HWHITE + BLACK + item + RESET, end=end)
@@ -346,7 +358,7 @@ def scroll():
 
 
         # enter pressed on anything other than a dir
-        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]):
+        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
             file_options(dir_contents[cursor])
             dir_contents = []
             cursor = 0
