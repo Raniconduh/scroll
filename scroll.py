@@ -6,6 +6,7 @@ import subprocess
 import stat
 from sys import argv
 import curses
+import signal
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -389,14 +390,19 @@ if __name__ == "__main__":
 
         else:
             cd = argv[1] + '/'
+
     
+
     screen = curses.initscr()
     curses.curs_set(0)
     curses.noecho()
     curses.cbreak()
     # screen.keypad(True)
 
-    scroll()
+    try:
+        scroll
+    except KeyboardInterrupt:
+        pass
 
     # screen.keypad(False)
     curses.nocbreak()
