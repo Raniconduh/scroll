@@ -133,73 +133,97 @@ def get_file_ext(item):
 
 
 # print a file name based on what kind of file it is
-def print_file_name(item, highlight=False, end='\n'):
+def print_file_name(screen, row, item, highlight=False):
     if isdir(item):
         if highlight:
-            print(HBLUE + BLACK + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(2))
+            screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            print(BLUE + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(1))
+            screen.addstr(row, len(item[:-1]), item[-1])
 
     elif issymlink(item):
         if highlight:
-            print(HCYAN + BLACK + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(4))
+            screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            print(CYAN + item[:-1] + RESET + item[-1], end=end)
+            # print(CYAN + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(3))
+            screen.addstr(row, len(item[:-1]), item[-1])
 
     elif isexec(item):
         if highlight:
-            print(HGREEN + BLACK + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(6))
+            screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            print(GREEN + item[:-1] + RESET + item[-1], end=end)
+            screen.addstr(row, 0, item[:-1], curses.color_pair(5))
+            screen.addstr(row, len(item[:-1]), item[-1])
 
     elif get_file_ext(item) in PHOTO_EXTENSIONS:
         if highlight:
-            print(HPURPLE + BLACK + item + RESET, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(8))
         else:
-            print(PURPLE + item + RESET, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(7))
             
     elif isfifo(item):
         if highlight:
-            print(HYELLOW + BLACK + item[:-1] + RESET + item[-1])
+            screen.addstr(row, 0, item[:-1], curses.color_pair(10))
+            screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            print(YELLOW + item[:-1] + RESET + item[-1])
+            screen.addstr(row, 0, item[:-1], curses.color_pair(9))
+            screen.addstr(row, len(item[:-1]), item[-1])
 
     elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
         if highlight:
-            print(HRED + BLACK + item + RESET, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(12))
         else:
-            print(RED + item + RESET, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(11))
 
     elif not exists(item):
         if highlight:
-            print(HRED + BLACK + item[:-1] + RESET + item[-1])
+            screen.addstr(row, 0, item[:-1], curses.color_pair(12))
+            screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            print(RED + item[:-1] + RESET + item[-1])
+            screen.addstr(row, 0, item[:-1], curses.color_pair(11))
+            screen.addstr(row, len(item[:-1]), item[-1])
     
     else:
         if highlight:
-            print(HWHITE + BLACK + item + RESET, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(14))
         else:
-            print(item, end=end)
+            screen.addstr(row, 0, item, curses.color_pair(13))
 
 
-def file_options(item):
+def file_options(item, screen):
     curses.curs_set(0)
+
+    screen.clear()
+    screen.refresh()
 
     cursor = 0
     options = ["View File", "Edit File", "Delete File", "Rename File"]
 
     while True:
-        print(CLEAR)
-        print(CLRLINE, end='')
-        print_file_name(item, end="\n\n")
+        row = 0
+        screen.erase()
+        # print(CLEAR)
+        # print(CLRLINE, end='')
+        # print_file_name(item, end="\n\n")
+        screen.addstr(row, 0, item)
+        row += 2
 
         for option in options:
-            print(CLRLINE, end='')
+            # print(CLRLINE, end='')
             if options.index(option) == cursor:
-                print(HWHITE + BLACK + option + RESET)
+                # print(HWHITE + BLACK + option + RESET)
+                screen.addstr(row, 0, option, curses.color_pair(2))
+                row += 1
             else:
-                print(option)
+                #print(option)
+                screen.addstr(row, 0, option)
+                row += 1
+
+        screen.refresh()
 
         key_pressed = readchar.readkey()
 
@@ -217,6 +241,8 @@ def file_options(item):
 
         # 'q' key or left arrow pressed exits the file menu
         elif key_pressed == readchar.key.LEFT or key_pressed == 'q':
+            screen.clear()
+            screen.refresh()
             break
 
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT:
@@ -226,21 +252,35 @@ def file_options(item):
                 else:
                     subprocess.run(["less", "-N", cd + item[:-1]])
 
+                screen.clear()
+                screen.refresh()
+
             elif "Edit" in options[cursor]:
                 if isascii(item):
                     subprocess.run(["editor", cd + item])
                 else:
                     subprocess.run(["editor", cd + item[:-1]])
 
+                screen.clear()
+                screen.refresh()
+
             elif "Delete" in options[cursor]:
-                print(CLRLINE, end='')
-                print("Are you sure you want to delete this file? [y/N]", end=": ")
+                # print(CLRLINE, end='')
+                # print("Are you sure you want to delete this file? [y/N]", end=": ")
+                screen.addstr(row, 0, "Are you sure you want to delete this file? [y/N]: ")
+                row += 1
+                screen.refresh()
+
                 inp = input()
                 if inp.lower() == 'y':
                     if isascii(item):
                         subprocess.run(["rm", cd + item])
                     else:
                         subprocess.run(["rm", cd + item[:-1]])
+
+                    screen.clear()
+                    screen.refresh()
+
                     return None
             
             elif "Rename" in options[cursor]:
@@ -249,22 +289,33 @@ def file_options(item):
                 else:
                     file_name = item[:-1]
 
-                print(CLRLINE, end='')
-                print("Rename file '" + file_name + "' to what? : ", end = "")
+                # print(CLRLINE, end='')
+                # print("Rename file '" + file_name + "' to what? : ", end = "")
+                screen.addstr(row, 0, "Rename file '" + file_name + "' to what? : ")
+                row += 1
+                screen.refresh()
                 to_rename = input()
                 
-                print(CLRLINE, end='')
-                print("Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?", end="\n[y/N]\n")
+                # print(CLRLINE, end='')
+                # print("Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?", end="\n[y/N]\n")
+                screen.addstr(row, 0, "Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?")
+                row += 1
+                screen.addstr("[y/N]")
+                row += 1
+                screen.refresh()
+
                 user_assuredness = input()
 
                 if user_assuredness.lower() == "y":
                     subprocess.run(["mv", cd + file_name, cd + to_rename])
+                    screen.clear()
+                    screen.refresh()
                     return None
 
     return None
 
 
-def scroll():
+def scroll(screen):
     print(CLRLINE)
     print(CLEAR)
 
@@ -286,20 +337,31 @@ def scroll():
     last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
     while True:
-        print(CLEAR)
-
-        print(CLRLINE, end='')
-        print(cd, end="\n\n")
+        row = 0
+        # print(CLEAR)
+        row += 1
+        screen.erase()
+        # print(CLRLINE, end='')
+        # print(cd, end="\n\n")
+        screen.addstr(row, 0, cd)
+        row += 2
 
         for item in dir_contents[first_file:last_file]:
-            print(CLRLINE, end='')
+            # print(CLRLINE, end='')
             if cursor == dir_contents.index(item):
-                print_file_name(item, highlight=True)
+                print_file_name(screen, row, item, highlight=True)
+                row += 1
             else:
-                print_file_name(item)
+                print_file_name(screen, row, item)
+                row += 1
 
-        print(CLRLINE, end='')
-        print("\n" + str(cursor + 1) + "/" + str(len(dir_contents)))
+        # print(CLRLINE, end='')
+        # print("\n" + str(cursor + 1) + "/" + str(len(dir_contents)))
+        row += 1
+        screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
+        row += 1
+
+        screen.refresh()
 
         key_pressed = readchar.readkey()
 
@@ -359,12 +421,14 @@ def scroll():
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
-            file_options(dir_contents[cursor])
+            file_options(dir_contents[cursor], screen)
             dir_contents = []
             cursor = 0
             list_files()
             first_file = 0
             last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+
+            screen.clear()
 
 
 def help_menu():
@@ -421,10 +485,36 @@ if __name__ == "__main__":
     curses.cbreak()
     # screen.keypad(True)
 
+    curses.start_color()
+
+    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_BLUE)
+
+    curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_CYAN)
+
+    curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_GREEN)
+
+    curses.init_pair(7, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
+
+    curses.init_pair(9, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(10, curses.COLOR_BLACK, curses.COLOR_YELLOW)
+
+    curses.init_pair(11, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(12, curses.COLOR_BLACK, curses.COLOR_RED)
+
+    curses.init_pair(13, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(14, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
     try:
-        scroll()
+        scroll(screen)
     except KeyboardInterrupt:
         pass
+
+    screen.clear()
+    screen.refresh()
 
     # screen.keypad(False)
     curses.nocbreak()
