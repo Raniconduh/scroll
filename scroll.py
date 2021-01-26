@@ -421,12 +421,20 @@ def scroll(screen):
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
-            file_options(dir_contents[cursor], screen)
+            options_screen = curses.newwin(25, 15, 3, 15)
+
+            try:
+                file_options(dir_contents[cursor], options_screen)
+            except KeyboardInterrupt:
+                pass
+
             dir_contents = []
-            cursor = 0
+            
+            cursor = 0 if cursor >= len(dir_contents) else cursor
+
             list_files()
-            first_file = 0
-            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+            # first_file = 0
+            # last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
             screen.clear()
 
