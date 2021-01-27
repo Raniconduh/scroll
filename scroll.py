@@ -196,6 +196,7 @@ def print_file_name(screen, row, item, highlight=False):
 
 def file_options(item, screen):
     curses.curs_set(0)
+    curses.start_color()
 
     screen.clear()
     screen.refresh()
@@ -216,23 +217,19 @@ def file_options(item, screen):
             # print(CLRLINE, end='')
             if options.index(option) == cursor:
                 # print(HWHITE + BLACK + option + RESET)
-                screen.addstr(row, 0, option, curses.color_pair(2))
+                print_file_name(screen, row, option, highlight=True)
                 row += 1
             else:
                 #print(option)
-                screen.addstr(row, 0, option)
+                print_file_name(screen, row, option)
                 row += 1
 
         screen.refresh()
 
         key_pressed = readchar.readkey()
 
-        # technincally sigill
-        if key_pressed == readchar.key.CTRL_C:
-            quit()
-
         # up arrow pressed
-        elif key_pressed == readchar.key.UP and cursor > 0:
+        if key_pressed == readchar.key.UP and cursor > 0:
             cursor -= 1
 
         # down arrow pressed
@@ -440,8 +437,9 @@ def scroll(screen):
 
             dir_contents = []
             
-            cursor = 0 if cursor >= len(dir_contents) else cursor
-
+            if cursor > len(dir_contents):
+                cursor -= 1
+            
             list_files()
             # first_file = 0
             # last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
