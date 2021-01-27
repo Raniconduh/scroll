@@ -271,12 +271,15 @@ def file_options(item, screen):
                 row += 1
                 screen.refresh()
 
-                inp = input()
-                if inp.lower() == 'y':
+                curses.echo()
+                inp = screen.getstr(row, 0)
+                curses.noecho()
+
+                if inp.lower() == b'y':
                     if isascii(item):
-                        subprocess.run(["rm", cd + item])
+                        subprocess.run(["rm", "-rf", cd + item])
                     else:
-                        subprocess.run(["rm", cd + item[:-1]])
+                        subprocess.run(["rm", "-rf", cd + item[:-1]])
 
                     screen.clear()
                     screen.refresh()
@@ -292,21 +295,28 @@ def file_options(item, screen):
                 # print(CLRLINE, end='')
                 # print("Rename file '" + file_name + "' to what? : ", end = "")
                 screen.addstr(row, 0, "Rename file '" + file_name + "' to what? : ")
-                row += 1
+                row += 2
                 screen.refresh()
-                to_rename = input()
+                
+                curses.echo()
+                to_rename = screen.getstr(row, 0).decode("utf-8")
+                row += 2
+                curses.noecho()
                 
                 # print(CLRLINE, end='')
                 # print("Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?", end="\n[y/N]\n")
                 screen.addstr(row, 0, "Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?")
                 row += 1
                 screen.addstr("[y/N]")
-                row += 1
+                row += 2
                 screen.refresh()
+        
+                curses.echo()
+                user_assuredness = screen.getstr(row, 0)
+                row += 1
+                curses.noecho()
 
-                user_assuredness = input()
-
-                if user_assuredness.lower() == "y":
+                if user_assuredness.lower() == b"y":
                     subprocess.run(["mv", cd + file_name, cd + to_rename])
                     screen.clear()
                     screen.refresh()
@@ -397,7 +407,7 @@ def scroll(screen):
         elif key_pressed == readchar.key.DOWN and cursor < len(dir_contents) - 1:
             cursor += 1
         # enter is pressed on a dir
-        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and isdir(dir_contents[cursor]):
+        elif (key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT) and isdir(dir_contents[cursor]):
             if dir_contents[cursor] == "../":
                 cdback()
                 cursor = 0
@@ -421,12 +431,12 @@ def scroll(screen):
 
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
-            options_screen = curses.newwin(25, 15, 3, 15)
+            options_screen = curses.newwin(25, 35, 3, 15)
 
             try:
                 file_options(dir_contents[cursor], options_screen)
             except KeyboardInterrupt:
-                pass
+                return None
 
             dir_contents = []
             
