@@ -6,7 +6,6 @@ import subprocess
 import stat
 from sys import argv
 import curses
-import signal
 
 RESET = "\u001B[0m"
 BLACK = "\u001B[30m"
@@ -31,11 +30,10 @@ HWHITE = "\u001b[47m"
 CLRLINE = "\033[2K\r"
 
 
-#dir_contents = {"files": [], "dirs": [], "dotdirs": [], "dotfiles": []}
+# dir_contents = {"files": [], "dirs": [], "dotdirs": [], "dotfiles": []}
 dir_contents = []
 
 cd = os.getenv("PWD") + '/'
-#home_dir = os.getenv("HOME")
 
 PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
@@ -43,7 +41,7 @@ ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
 
 # list and store all the files in dir
 def list_files():
-    tmp_contents = {"dirs":[], "files":[]}
+    tmp_contents = {"dirs": [], "files": []}
 
     dir_contents.append("../")
 
@@ -56,7 +54,7 @@ def list_files():
 
             elif item.is_dir():
                 tmp_contents["dirs"].append(item.name + "/")
-            
+
             else:
                 if item.is_symlink():
                     tmp_contents["files"].append(item.name + "@")
@@ -98,6 +96,7 @@ def issymlink(item):
         return True
     return False
 
+
 # check if a file name is executeable
 # files ending with '*' are executeable
 def isexec(item):
@@ -105,10 +104,12 @@ def isexec(item):
         return True
     return False
 
+
 def isascii(item):
     if not isdir(item) and not issymlink(item) and not isexec(item):
         return True
     return False
+
 
 # check if file is fifo aka named pipe
 # files ending with '|' are fifos
@@ -117,10 +118,12 @@ def isfifo(item):
         return True
     return False
 
+
 def exists(item):
     if item[-1] == '?':
         return False
     return True
+
 
 # return the extension of the file
 # e.g. 'file.txt' will return txt
@@ -147,7 +150,6 @@ def print_file_name(screen, row, item, highlight=False):
             screen.addstr(row, 0, item[:-1], curses.color_pair(4))
             screen.addstr(row, len(item[:-1]), item[-1])
         else:
-            # print(CYAN + item[:-1] + RESET + item[-1], end=end)
             screen.addstr(row, 0, item[:-1], curses.color_pair(3))
             screen.addstr(row, len(item[:-1]), item[-1])
 
@@ -164,7 +166,7 @@ def print_file_name(screen, row, item, highlight=False):
             screen.addstr(row, 0, item, curses.color_pair(8))
         else:
             screen.addstr(row, 0, item, curses.color_pair(7))
-            
+
     elif isfifo(item):
         if highlight:
             screen.addstr(row, 0, item[:-1], curses.color_pair(10))
@@ -186,7 +188,7 @@ def print_file_name(screen, row, item, highlight=False):
         else:
             screen.addstr(row, 0, item[:-1], curses.color_pair(11))
             screen.addstr(row, len(item[:-1]), item[-1])
-    
+
     else:
         if highlight:
             screen.addstr(row, 0, item, curses.color_pair(14))
@@ -207,20 +209,14 @@ def file_options(item, screen):
     while True:
         row = 0
         screen.erase()
-        # print(CLEAR)
-        # print(CLRLINE, end='')
-        # print_file_name(item, end="\n\n")
         screen.addstr(row, 0, item)
         row += 2
 
         for option in options:
-            # print(CLRLINE, end='')
             if options.index(option) == cursor:
-                # print(HWHITE + BLACK + option + RESET)
                 print_file_name(screen, row, option, highlight=True)
                 row += 1
             else:
-                #print(option)
                 print_file_name(screen, row, option)
                 row += 1
 
@@ -262,8 +258,6 @@ def file_options(item, screen):
                 screen.refresh()
 
             elif "Delete" in options[cursor]:
-                # print(CLRLINE, end='')
-                # print("Are you sure you want to delete this file? [y/N]", end=": ")
                 screen.addstr(row, 0, "Are you sure you want to delete this file? [y/N]: ")
                 row += 1
                 screen.refresh()
@@ -282,32 +276,28 @@ def file_options(item, screen):
                     screen.refresh()
 
                     return None
-            
+
             elif "Rename" in options[cursor]:
                 if isascii(item):
                     file_name = item
                 else:
                     file_name = item[:-1]
 
-                # print(CLRLINE, end='')
-                # print("Rename file '" + file_name + "' to what? : ", end = "")
                 screen.addstr(row, 0, "Rename file '" + file_name + "' to what? : ")
                 row += 2
                 screen.refresh()
-                
+
                 curses.echo()
                 to_rename = screen.getstr(row, 0).decode("utf-8")
                 row += 2
                 curses.noecho()
-                
-                # print(CLRLINE, end='')
-                # print("Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?", end="\n[y/N]\n")
+
                 screen.addstr(row, 0, "Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?")
                 row += 1
                 screen.addstr("[y/N]")
                 row += 2
                 screen.refresh()
-        
+
                 curses.echo()
                 user_assuredness = screen.getstr(row, 0)
                 row += 1
@@ -330,12 +320,10 @@ def scroll(screen):
 
     list_files()
 
-    cursor = 0;
+    cursor = 0
 
     global dir_contents
     global cd
-
-    # scrolling = False
 
     term_size = os.get_terminal_size()
 
@@ -345,16 +333,12 @@ def scroll(screen):
 
     while True:
         row = 0
-        # print(CLEAR)
         row += 1
         screen.erase()
-        # print(CLRLINE, end='')
-        # print(cd, end="\n\n")
         screen.addstr(row, 0, cd)
         row += 2
 
         for item in dir_contents[first_file:last_file]:
-            # print(CLRLINE, end='')
             if cursor == dir_contents.index(item):
                 print_file_name(screen, row, item, highlight=True)
                 row += 1
@@ -362,8 +346,6 @@ def scroll(screen):
                 print_file_name(screen, row, item)
                 row += 1
 
-        # print(CLRLINE, end='')
-        # print("\n" + str(cursor + 1) + "/" + str(len(dir_contents)))
         row += 1
         screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
         row += 1
@@ -392,7 +374,6 @@ def scroll(screen):
 
             dir_contents = []
             list_files()
-            cursor = 0
 
         # quit options
         if key_pressed == readchar.key.CTRL_C or key_pressed == 'q':
@@ -425,7 +406,6 @@ def scroll(screen):
             first_file = 0
             last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
-
         # enter pressed on anything other than a dir
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
             options_screen = curses.newwin(25, 35, 3, 15)
@@ -436,13 +416,11 @@ def scroll(screen):
                 return None
 
             dir_contents = []
-            
+
             if cursor > len(dir_contents):
                 cursor -= 1
-            
+
             list_files()
-            # first_file = 0
-            # last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
             screen.clear()
 
@@ -493,13 +471,10 @@ if __name__ == "__main__":
         else:
             cd = argv[1] + '/'
 
-    
-
     screen = curses.initscr()
     curses.curs_set(0)
     curses.noecho()
     curses.cbreak()
-    # screen.keypad(True)
 
     curses.start_color()
 
@@ -532,7 +507,6 @@ if __name__ == "__main__":
     screen.clear()
     screen.refresh()
 
-    # screen.keypad(False)
     curses.nocbreak()
     curses.echo()
     curses.curs_set(1)
