@@ -424,6 +424,32 @@ def scroll(screen):
 
             screen.clear()
 
+        # run a command on '!''
+        elif key_pressed == '!':
+            row += 1
+            screen.addstr(row, 0, "cmd: ")
+
+            curses.echo()
+            curses.curs_set(1)
+            command = screen.getstr(row, 6).decode("utf-8")
+            command = command.split(" ")
+            curses.curs_set(0)
+            curses.noecho()
+
+            curses.endwin()
+
+            try:
+                subprocess.run(command, cwd=cd)
+            except Exception as err:
+                print("Command failed with exception " + str(err))
+
+            print("\nPress enter to continue")
+            input()
+            screen = curses.initscr()
+
+            dir_contents = []
+            list_files()
+
 
 def help_menu():
     print(
