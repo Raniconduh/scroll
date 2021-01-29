@@ -353,9 +353,6 @@ def file_options(item, screen):
 
 
 def scroll(screen):
-    print(CLRLINE)
-    print(CLEAR)
-
     curses.curs_set(0)
 
     list_files()
@@ -372,8 +369,7 @@ def scroll(screen):
     last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
     while True:
-        row = 0
-        row += 1
+        row = 1
         screen.erase()
         screen.addstr(row, 0, cd)
         row += 2
@@ -385,6 +381,10 @@ def scroll(screen):
             else:
                 print_file_name(screen, row, item)
                 row += 1
+
+        if cursor > len(dir_contents) - 1:
+            cursor = len(dir_contents) - 1
+            print_file_name(screen, cursor + 3, dir_contents[cursor], highlight=True)
 
         row += 1
         screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
@@ -456,10 +456,6 @@ def scroll(screen):
                 return None
 
             dir_contents = []
-
-            if cursor > len(dir_contents):
-                cursor -= 1
-
             list_files()
 
             screen.clear()
