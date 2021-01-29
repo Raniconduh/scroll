@@ -465,12 +465,13 @@ def scroll(screen):
             curses.echo()
             curses.curs_set(1)
             command = screen.getstr(row, 6).decode("utf-8")
-            command = command.split(" ")
             curses.curs_set(0)
             curses.noecho()
 
             # make sure command is not empty
-            if not command:
+            if command:
+                command = command.split(" ")
+
                 curses.endwin()
 
                 try:
