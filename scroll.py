@@ -318,27 +318,29 @@ def file_options(item, screen):
                 command = screen.getstr(row, 6).decode("utf-8")
                 curses.curs_set(0)
                 curses.echo()
+    
+                # make sure command in not empty before continuing
+                if command:
+                    command = command.split(" ")
 
-                command = command.split(" ")
+                    if isascii(item):
+                        file_name = item
+                    else:
+                        file_name = item[:-1]
 
-                if isascii(item):
-                    file_name = item
-                else:
-                    file_name = item[:-1]
+                    command.append(cd + file_name)
 
-                command.append(cd + file_name)
+                    curses.endwin()
+                    try:
+                        subprocess.run(command)
+                    except Exception as err:
+                        print("Command failed with exception " + str(err))
 
-                curses.endwin()
-                try:
-                    subprocess.run(command)
-                except Exception as err:
-                    print("Command failed with exception " + str(err))
+                    print("\nPress enter to continue\n")
+                    input()
+                    screen = curses.initscr()
 
-                print("\nPress enter to continue\n")
-                input()
-                screen = curses.initscr()
-
-                return
+                    return
 
     return None
 
@@ -457,7 +459,7 @@ def scroll(screen):
 
         # run a command on '!''
         elif key_pressed == '!':
-            row += 1
+            row -= 1
             screen.addstr(row, 0, "cmd: ")
 
             curses.echo()
@@ -467,19 +469,21 @@ def scroll(screen):
             curses.curs_set(0)
             curses.noecho()
 
-            curses.endwin()
+            # make sure command is not empty
+            if not command:
+                curses.endwin()
 
-            try:
-                subprocess.run(command, cwd=cd)
-            except Exception as err:
-                print("Command failed with exception " + str(err))
+                try:
+                    subprocess.run(command, cwd=cd)
+                except Exception as err:
+                    print("Command failed with exception " + str(err))
 
-            print("\nPress enter to continue")
-            input()
-            screen = curses.initscr()
+                print("\nPress enter to continue")
+                input()
+                screen = curses.initscr()
 
-            dir_contents = []
-            list_files()
+                dir_contents = []
+                list_files()
 
 
 def help_menu():
