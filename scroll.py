@@ -245,22 +245,26 @@ def file_options(item, screen):
 
         elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT:
             if "View" in options[cursor]:
+                curses.endwin()
+
                 if isascii(item):
                     subprocess.run(["less", "-N", cd + item])
                 else:
                     subprocess.run(["less", "-N", cd + item[:-1]])
 
-                screen.clear()
-                screen.refresh()
+                screen = curses.initscr()
+                return
 
             elif "Edit" in options[cursor]:
+                curses.endwin()
+
                 if isascii(item):
                     subprocess.run(["editor", cd + item])
                 else:
                     subprocess.run(["editor", cd + item[:-1]])
 
-                screen.clear()
-                screen.refresh()
+                screen = curses.initscr()
+                return
 
             elif "Delete" in options[cursor]:
                 screen.addstr(row, column, "Are you sure you want to delete this file? [y/N]: ")
