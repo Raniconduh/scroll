@@ -204,7 +204,7 @@ def file_options(item, screen):
     screen.refresh()
 
     cursor = 0
-    options = ["View File", "Edit File", "Delete File", "Rename File"]
+    options = ["View File", "Edit File", "Delete File", "Rename File", "Open File with Command"]
 
     while True:
         row = 0
@@ -308,6 +308,37 @@ def file_options(item, screen):
                     screen.clear()
                     screen.refresh()
                     return None
+
+            elif "Command" in options[cursor]:
+                row += 1
+                screen.addstr(row, 0, "cmd: ")
+
+                curses.echo()
+                curses.curs_set(1)
+                command = screen.getstr(row, 6).decode("utf-8")
+                curses.curs_set(0)
+                curses.echo()
+
+                command = command.split(" ")
+
+                if isascii(item):
+                    file_name = item
+                else:
+                    file_name = item[:-1]
+
+                command.append(cd + file_name)
+
+                curses.endwin()
+                try:
+                    subprocess.run(command)
+                except Exception as err:
+                    print("Command failed with exception " + str(err))
+
+                print("\nPress enter to continue\n")
+                input()
+                screen = curses.initscr()
+
+                return
 
     return None
 
