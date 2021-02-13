@@ -39,8 +39,17 @@ PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
 
 
-# list and store all the files in dir
 def list_files():
+    """
+    list all the files in the current dir
+    listed files will be appended to the dir_contents list/dict
+    files names may also end in special character:
+        ?) file does not exist?
+        /) file is a dir
+        @) file is a symbolic link
+        *) file is executable
+        |) file is pip / fifo
+    """
     tmp_contents = {"dirs": [], "files": []}
 
     dir_contents.append("../")
@@ -81,62 +90,83 @@ def list_files():
         pass
 
 
-# check if a file name is a directory
-# files ending with '/' are directories
 def isdir(item):
+    """
+    checks if a file is a dir
+    files ending in '/' are directories
+    """
     if item[-1] == '/':
         return True
     return False
 
 
-# check if a file name is a symbolic link
-# files ending with '@' are symlinks
 def issymlink(item):
+    """
+    check if a file is a symbolic link
+    files ending with '@' are symlinks
+    """
     if item[-1] == '@':
         return True
     return False
 
 
-# check if a file name is executeable
-# files ending with '*' are executeable
 def isexec(item):
+    """
+    check if a file is executable
+    files ending with '*' are executable
+    """
     if item[-1] == "*":
         return True
     return False
 
 
 def isascii(item):
+    """
+    check if a file is not anything special
+    files that do not end in special characters are normal / ascii
+    """
     if not isdir(item) and not issymlink(item) and not isexec(item):
         return True
     return False
 
 
-# check if file is fifo aka named pipe
-# files ending with '|' are fifos
 def isfifo(item):
+    """
+    check if file is fifo aka named pipe
+    files ending with '|' are fifos
+    """
     if item[-1] == "|":
         return True
     return False
 
 
 def exists(item):
+    """
+    check if file exist i.e.e the last character is not '?'
+    """
     if item[-1] == '?':
         return False
     return True
 
 
-# return the extension of the file
-# e.g. 'file.txt' will return txt
-# no extension e.g. 'file' will return None
 def get_file_ext(item):
+    """
+    return th extension of the file
+    e.g. 'file.txt' will return 'txt'
+    no extension e.g. 'file' will return None
+    """
     item_split = item.split('.')
     if len(item_split) == 1:
         return None
     return item_split[-1].lower()
 
 
-# print a file name based on what kind of file it is
 def print_file_name(screen, row, item, column=0, highlight=False):
+    """
+    print a file name based on what kind of file it is
+    may also print a highlighted or non-highlited file
+    this function is similar to curses.window.addstr()
+    """
     if isdir(item):
         if highlight:
             screen.addstr(row, column, item[:-1], curses.color_pair(2))
@@ -197,6 +227,9 @@ def print_file_name(screen, row, item, column=0, highlight=False):
 
 
 def file_options(item, screen):
+    """
+    the options menu for a given file
+    """
     curses.curs_set(0)
     curses.start_color()
 
@@ -357,6 +390,10 @@ def file_options(item, screen):
 
 
 def scroll(screen):
+    """
+    the main file manager
+    this will list all the files, allow commands, etc.
+    """
     curses.curs_set(0)
 
     list_files()
@@ -495,6 +532,10 @@ def scroll(screen):
 
 
 def help_menu():
+    """
+    prints the help text for the program
+    i.e. command line args, options, etc.
+    """
     print(
             "Scroll file manager\n"
             "Manage files using scroll; the console file manager\n"
