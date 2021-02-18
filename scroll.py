@@ -35,8 +35,11 @@ dir_contents = []
 
 cd = os.getenv("PWD") + '/'
 
-PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
-ARCHIVE_EXTENSIONS = ["tar", "xz", "bz2", "gz", "zip", "rar"]
+PHOTO_EXTENSIONS = ("jpg", "jpeg", "png", "svg")
+ARCHIVE_EXTENSIONS = (
+        "tar", "xz", "bz2", "gz",
+        "zip", "rar"
+)
 
 
 def list_files():
