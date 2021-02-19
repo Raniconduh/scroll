@@ -35,7 +35,12 @@ dir_contents = []
 
 cd = os.getenv("PWD") + '/'
 
-PHOTO_EXTENSIONS = ("jpg", "jpeg", "png", "svg")
+# maybe remove these tuples and use mime type checking instead..
+MEDIA_EXTENSIONS = (
+        "jpg", "jpeg", "png", "svg",
+        "m4v", "mp4", "mkv", "m4a",
+        "mp3", "webm"
+)
 ARCHIVE_EXTENSIONS = (
         "tar", "xz", "bz2", "gz",
         "zip", "rar"
@@ -201,7 +206,7 @@ def print_file_name(screen, row, item, column=0, highlight=False):
             screen.addstr(row, column, item[:-1], curses.color_pair(5))
             screen.addstr(row, len(item[:-1]) + column, item[-1])
 
-    elif get_file_ext(item) in PHOTO_EXTENSIONS:
+    elif get_file_ext(item) in MEDIA_EXTENSIONS:
         if highlight:
             screen.addstr(row, column, item, curses.color_pair(8))
         else:
