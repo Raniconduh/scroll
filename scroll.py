@@ -42,6 +42,9 @@ ARCHIVE_EXTENSIONS = (
 )
 
 
+perm_error = False
+
+
 def list_files():
     """
     list all the files in the current dir
@@ -57,8 +60,12 @@ def list_files():
 
     dir_contents.append("../")
 
+    global perm_error
+
     try:
         items = os.scandir(cd)
+
+        perm_error = False
 
         for item in items:
             if not os.access(item, os.F_OK):
@@ -90,7 +97,7 @@ def list_files():
             dir_contents.append(tmp_file)
 
     except PermissionError:
-        pass
+        perm_error = True
 
 
 def isdir(item):
@@ -416,8 +423,11 @@ def scroll(screen):
         row = 1
         screen.erase()
         screen.addstr(row, 0, cd)
+        if perm_error:
+            screen.addstr(row, len(cd) + 1, "Permission Denied", curses.color_pair(11))
         row += 2
 
+        # print all the items of the dir
         for item in dir_contents[first_file:last_file]:
             if cursor == dir_contents.index(item):
                 print_file_name(screen, row, item, highlight=True)
@@ -426,9 +436,12 @@ def scroll(screen):
                 print_file_name(screen, row, item)
                 row += 1
 
+
+        # highlight the file the cursor is on
         if cursor > len(dir_contents) - 1:
             cursor = len(dir_contents) - 1
             print_file_name(screen, cursor + 3, dir_contents[cursor], highlight=True)
+
 
         row += 1
         screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
@@ -491,13 +504,14 @@ def scroll(screen):
             last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
         # enter pressed on anything other than a dir
-        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT and not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor]):
+        elif (key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT) and (
+                not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor])):
             options_screen = curses.newwin(25, 35, 3, 15)
 
             try:
                 file_options(dir_contents[cursor], options_screen)
             except KeyboardInterrupt:
-                return None
+                return
 
             dir_contents = []
             list_files()
