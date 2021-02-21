@@ -116,9 +116,7 @@ def isdir(item):
     checks if a file is a dir
     files ending in '/' are directories
     """
-    if item[-1] == '/':
-        return True
-    return False
+    return True if item[-1] == '/' else False
 
 
 def issymlink(item):
@@ -126,9 +124,7 @@ def issymlink(item):
     check if a file is a symbolic link
     files ending with '@' are symlinks
     """
-    if item[-1] == '@':
-        return True
-    return False
+    return True if item[-1] == '@' else False
 
 
 def isexec(item):
@@ -136,9 +132,7 @@ def isexec(item):
     check if a file is executable
     files ending with '*' are executable
     """
-    if item[-1] == "*":
-        return True
-    return False
+    return True if item[-1] == '*' else False
 
 
 def isascii(item):
@@ -156,18 +150,14 @@ def isfifo(item):
     check if file is fifo aka named pipe
     files ending with '|' are fifos
     """
-    if item[-1] == "|":
-        return True
-    return False
+    return True if item[-1] == '|' else False
 
 
 def exists(item):
     """
     check if file exist i.e.e the last character is not '?'
     """
-    if item[-1] == '?':
-        return False
-    return True
+    return False if item[-1] == '?' else True
 
 
 def get_file_ext(item):
