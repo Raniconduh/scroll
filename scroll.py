@@ -179,62 +179,33 @@ def print_file_name(screen, row, item, column=0, highlight=False):
     this function is similar to curses.window.addstr()
     """
     if isdir(item):
-        if highlight:
-            screen.addstr(row, column, item[:-1], curses.color_pair(2))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
-        else:
-            screen.addstr(row, column, item[:-1], curses.color_pair(1))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
+        screen.addstr(row, column, item[:-1], curses.color_pair(2 if highlight else 1))
+        screen.addstr(row, len(item[:-1]) + column, item[-1])
 
     elif issymlink(item):
-        if highlight:
-            screen.addstr(row, column, item[:-1], curses.color_pair(4))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
-        else:
-            screen.addstr(row, column, item[:-1], curses.color_pair(3))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
+        screen.addstr(row, column, item[:-1], curses.color_pair(4 if highlight else 3))
+        screen.addstr(row, len(item[:-1]) + column, item[-1])
 
     elif isexec(item):
-        if highlight:
-            screen.addstr(row, column, item[:-1], curses.color_pair(6))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
-        else:
-            screen.addstr(row, column, item[:-1], curses.color_pair(5))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
+        screen.addstr(row, column, item[:-1], curses.color_pair(6 if highlight else 5))
+        screen.addstr(row, len(item[:-1]) + column, item[-1])
 
     elif get_file_ext(item) in MEDIA_EXTENSIONS:
-        if highlight:
-            screen.addstr(row, column, item, curses.color_pair(8))
-        else:
-            screen.addstr(row, column, item, curses.color_pair(7))
+        screen.addstr(row, column, item, curses.color_pair(8 if highlight else 7))
 
     elif isfifo(item):
-        if highlight:
-            screen.addstr(row, column, item[:-1], curses.color_pair(10))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
-        else:
-            screen.addstr(row, column, item[:-1], curses.color_pair(9))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
+        screen.addstr(row, column, item[:-1], curses.color_pair(10 if highlight else 9))
+        screen.addstr(row, len(item[:-1]) + column, item[-1])
 
     elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
-        if highlight:
-            screen.addstr(row, column, item, curses.color_pair(12))
-        else:
-            screen.addstr(row, column, item, curses.color_pair(11))
+        screen.addstr(row, column, item, curses.color_pair(12 if highlight else 11))
 
     elif not exists(item):
-        if highlight:
-            screen.addstr(row, column, item[:-1], curses.color_pair(12))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
-        else:
-            screen.addstr(row, column, item[:-1], curses.color_pair(11))
-            screen.addstr(row, len(item[:-1]) + column, item[-1])
+        screen.addstr(row, column, item[:-1], curses.color_pair(12 if highlight else 11))
+        screen.addstr(row, len(item[:-1]) + column, item[-1])
 
     else:
-        if highlight:
-            screen.addstr(row, column, item, curses.color_pair(14))
-        else:
-            screen.addstr(row, column, item, curses.color_pair(13))
+        screen.addstr(row, column, item, curses.color_pair(14 if highlight else 13))
 
 
 def file_options(item, screen):
