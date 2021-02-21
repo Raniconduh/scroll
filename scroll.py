@@ -47,8 +47,11 @@ ARCHIVE_EXTENSIONS = (
 )
 
 
+# if the current dir is not readable / gives a permission error
 perm_error = False
 
+# whether or not to show dotfiles
+show_hidden = False
 
 def list_files():
     """
@@ -73,7 +76,10 @@ def list_files():
         perm_error = False
 
         for item in items:
-            if not os.access(item, os.F_OK):
+            # do not append dotfiles to list if show_hidden is false
+            if not show_hidden and (item.name[0] == '.') : pass
+
+            elif not os.access(item, os.F_OK):
                 tmp_contents["files"].append(item.name + '?')
 
             elif item.is_dir():
@@ -417,6 +423,7 @@ def scroll(screen):
 
     global dir_contents
     global cd
+    global show_hidden
 
     term_size = os.get_terminal_size()
 
@@ -551,6 +558,15 @@ def scroll(screen):
 
                 dir_contents = []
                 list_files()
+
+        # toggle showing / hiding dotfiles
+        elif key_pressed == '.':
+            show_hidden = not show_hidden
+            dir_contents = []
+            list_files()
+
+            first_file = 0
+            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
 
 
 def help_menu():
