@@ -66,8 +66,6 @@ def list_files():
     """
     tmp_contents = {"dirs": [], "files": []}
 
-    dir_contents.append("../")
-
     global perm_error
 
     try:
