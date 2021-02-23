@@ -7,30 +7,7 @@ import stat
 from sys import argv
 import curses
 
-RESET = "\u001B[0m"
-BLACK = "\u001B[30m"
-RED = "\u001B[31m"
-GREEN = "\u001B[32m"
-YELLOW = "\u001B[33m"
-BLUE = "\u001B[34m"
-PURPLE = "\u001B[35m"
-CYAN = "\u001B[36m"
-WHITE = "\u001B[37m"
-CLEAR = "\033[H\033[2J"
 
-HBLACK = "\u001b[40m"
-HRED = "\u001b[41m"
-HGREEN = "\u001b[42m"
-HYELLOW = "\u001b[43m"
-HBLUE = "\u001b[44m"
-HPURPLE = "\u001b[45m"
-HCYAN = "\u001b[46m"
-HWHITE = "\u001b[47m"
-
-CLRLINE = "\033[2K\r"
-
-
-# dir_contents = {"files": [], "dirs": [], "dotdirs": [], "dotfiles": []}
 dir_contents = []
 
 cd = os.getenv("PWD") + '/'
@@ -48,23 +25,10 @@ ARCHIVE_EXTENSIONS = (
 
 
 # keypresses
-open_keys = (
-        readchar.key.ENTER,
-        readchar.key.RIGHT,
-        'l'
-)
-back_keys = (
-        readchar.key.LEFT,
-        'h'
-)
-up_keys = (
-        readchar.key.UP,
-        'k'
-)
-down_keys = (
-        readchar.key.DOWN,
-        'j'
-)
+open_keys = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
+back_keys = (readchar.key.LEFT, 'h')
+up_keys = (readchar.key.UP, 'k')
+down_keys = (readchar.key.DOWN, 'j')
 
 
 # if the current dir is not readable / gives a permission error
