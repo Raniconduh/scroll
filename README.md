@@ -12,12 +12,12 @@ The `--help` flag may be specified to scroll which will result in the help scree
 
 ## Commands
 
-* Up Arrow: move the cursor up
-* Down Arraw: move the cursor down
-* `!` (Exclamation Mark): Run a shell command
-* Enter Key or Right Arrow: if the cursor is on a dorectory, it will enter that directory. If it is a file, the file options menu will be opened
-* Left Arrow: Move into the previous directory. e.g if the current directory is `/path/to/dir`, then the directory `/path/to` will be entered
+* Up Arrow or `k`: move the cursor up
+* Down Arraw or `j`: move the cursor down
+* Enter Key, Right Arrow, or `l`: if the cursor is on a dorectory, it will enter that directory. If it is a file, the file options menu will be opened
+* Left Arrow or `h`: Move into the previous directory. e.g if the current directory is `/path/to/dir`, then the directory `/path/to` will be entered
 * `.` (Period): Hide or show dotfiles (toggle).
+* `!` (Exclamation Mark): Run a shell command
 
 
 # Installation
