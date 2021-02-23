@@ -260,9 +260,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["less", "-N", cd + item])
+                    subprocess.run(["sh", "-c", f"less -N {cd + item}"])
                 else:
-                    subprocess.run(["less", "-N", cd + item[:-1]])
+                    subprocess.run(["sh", "-c", f"less -N {cd + item[:-1]}"])
 
                 screen = curses.initscr()
                 return
@@ -271,9 +271,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["editor", cd + item])
+                    subprocess.run(["sh", "-c", f"editor {cd + item}"])
                 else:
-                    subprocess.run(["editor", cd + item[:-1]])
+                    subprocess.run(["sh", "-c", f"editor {cd + item[:-1]}"])
 
                 screen = curses.initscr()
                 return
@@ -289,9 +289,9 @@ def file_options(item, screen):
 
                 if inp.lower() == b'y':
                     if isascii(item):
-                        subprocess.run(["rm", "-rf", cd + item])
+                        subprocess.run(["sh", "-c", f"rm -rf {cd + item}"])
                     else:
-                        subprocess.run(["rm", "-rf", cd + item[:-1]])
+                        subprocess.run(["sh", "-c", f"rm -rf {cd + item[:-1]}"])
 
                     screen.clear()
                     screen.refresh()
@@ -327,7 +327,8 @@ def file_options(item, screen):
                     curses.noecho()
 
                     if user_assuredness.lower() == b"y":
-                        subprocess.run(["mv", cd + file_name, cd + to_rename])
+                        subprocess.run([
+                            "sh", "-c", f"mv {cd + file_name} {cd + to_rename}"])
                         screen.clear()
                         screen.refresh()
                         return
@@ -344,18 +345,17 @@ def file_options(item, screen):
     
                 # make sure command in not empty before continuing
                 if command:
-                    command = command.split(" ")
 
                     if isascii(item):
                         file_name = item
                     else:
                         file_name = item[:-1]
 
-                    command.append(cd + file_name)
+                    command += " " + cd + file_name
 
                     curses.endwin()
                     try:
-                        subprocess.run(command)
+                        subprocess.run(["sh", "-c", command])
                     except Exception as err:
                         print(f"Command failed with exception {err}")
 
@@ -499,12 +499,10 @@ def scroll(screen):
 
             # make sure command is not empty
             if command:
-                command = command.split(" ")
-
                 curses.endwin()
 
                 try:
-                    subprocess.run(command, cwd=cd)
+                    subprocess.run(["sh", "-c", command], cwd=cd)
                 except Exception as err:
                     print("Command failed with exception " + str(err))
 
