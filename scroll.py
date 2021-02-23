@@ -89,7 +89,8 @@ def list_files():
 
         for tmp_file in tmp_contents["files"]:
             dir_contents.append(tmp_file)
-
+        
+        if not len(dir_contents) : dir_contents.append("../")
     except PermissionError:
         perm_error = True
         dir_contents.append('../')
