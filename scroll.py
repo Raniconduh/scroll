@@ -47,11 +47,32 @@ ARCHIVE_EXTENSIONS = (
 )
 
 
+# keypresses
+open_keys = (
+        readchar.key.ENTER,
+        readchar.key.RIGHT,
+        'l'
+)
+back_keys = (
+        readchar.key.LEFT,
+        'h'
+)
+up_keys = (
+        readchar.key.UP,
+        'k'
+)
+down_keys = (
+        readchar.key.DOWN,
+        'j'
+)
+
+
 # if the current dir is not readable / gives a permission error
 perm_error = False
 
 # whether or not to show dotfiles
 show_hidden = False
+
 
 def list_files():
     """
@@ -107,6 +128,20 @@ def list_files():
 
     except PermissionError:
         perm_error = True
+
+
+# cd into .. without uglying the path
+def cdback():
+    """
+    cd into .. without making the path ugly
+    """
+    global cd
+    global dir_contents
+
+    # remove the last two segments of the path and append a '/'
+    cd = '/'.join(cd.split('/')[:-2]) + '/'
+    dir_contents = []
+    list_files()
 
 
 def isdir(item):
@@ -243,20 +278,20 @@ def file_options(item, screen):
         key_pressed = readchar.readkey()
 
         # up arrow pressed
-        if key_pressed == readchar.key.UP and cursor > 0:
+        if key_pressed in up_keys and cursor > 0:
             cursor -= 1
 
         # down arrow pressed
-        elif key_pressed == readchar.key.DOWN and cursor < len(options) - 1:
+        elif key_pressed in down_keys and cursor < len(options) - 1:
             cursor += 1
 
         # 'q' key or left arrow pressed exits the file menu
-        elif key_pressed == readchar.key.LEFT or key_pressed == 'q':
+        elif key_pressed in back_keys or key_pressed == 'q':
             screen.clear()
             screen.refresh()
             break
 
-        elif key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT:
+        elif key_pressed in open_keys:
             if "View" in options[cursor]:
                 curses.endwin()
 
@@ -305,7 +340,7 @@ def file_options(item, screen):
                 else:
                     file_name = item[:-1]
 
-                screen.addstr(row, column, "Rename file '" + file_name + "' to what? : ")
+                screen.addstr(row, column, f"Rename file '{file_name}' to what? : ")
                 row += 2
                 screen.refresh()
 
@@ -316,7 +351,7 @@ def file_options(item, screen):
 
                 # make sure empty string is not passed
                 if to_rename:
-                    screen.addstr(row, column, "Are you sure you want to rename '" + file_name + "' to '" + to_rename + "'?")
+                    screen.addstr(row, column, f"Are you sure you want to rename '{file_name}' to '{to_rename}'?")
                     row += 1
                     screen.addstr("[y/N]")
                     row += 2
@@ -331,7 +366,7 @@ def file_options(item, screen):
                         subprocess.run(["mv", cd + file_name, cd + to_rename])
                         screen.clear()
                         screen.refresh()
-                        return None
+                        return
 
             elif "Command" in options[cursor]:
                 row += 1
@@ -358,7 +393,7 @@ def file_options(item, screen):
                     try:
                         subprocess.run(command)
                     except Exception as err:
-                        print("Command failed with exception " + str(err))
+                        print(f"Command failed with exception {err}")
 
                     print("\nPress enter to continue\n")
                     input()
@@ -366,7 +401,7 @@ def file_options(item, screen):
 
                     return
 
-    return None
+    return
 
 
 def scroll(screen):
@@ -417,7 +452,7 @@ def scroll(screen):
 
         row += 1
         try:
-            screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
+            screen.addstr(row, 0, f"{cursor + 1}/{len(dir_contents)}")
         except curses.error: # force continue on error
             pass
 
@@ -435,15 +470,7 @@ def scroll(screen):
             first_file -= 1
             last_file -= 1
 
-        # cd into .. without uglying the path
-        def cdback():
-            global cd
-            global dir_contents
 
-            cd = cd.split('/')
-            cd = cd[:-2]
-            cd = '/'.join(cd)
-            cd += '/'
 
             dir_contents = []
             list_files()
@@ -452,13 +479,13 @@ def scroll(screen):
         if key_pressed == readchar.key.CTRL_C or key_pressed == 'q':
             break
         # up arrow key pressed
-        elif key_pressed == readchar.key.UP and cursor > 0:
+        elif key_pressed in up_keys and cursor > 0:
             cursor -= 1
         # down arrow key pressed
-        elif key_pressed == readchar.key.DOWN and cursor < len(dir_contents) - 1:
+        elif key_pressed in down_keys and cursor < len(dir_contents) - 1:
             cursor += 1
         # enter is pressed on a dir
-        elif (key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT) and isdir(dir_contents[cursor]):
+        elif key_pressed in open_keys and isdir(dir_contents[cursor]):
             if dir_contents[cursor] == "../":
                 cdback()
                 cursor = 0
@@ -473,15 +500,16 @@ def scroll(screen):
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
-        elif key_pressed == readchar.key.LEFT and cd != '/':
+        elif key_pressed in back_keys  and cd != '/':
             cdback()
             cursor = 0
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         # enter pressed on anything other than a dir
-        elif (key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT) and (
-                not isfifo(dir_contents[cursor]) and exists(dir_contents[cursor])):
+        elif key_pressed in open_keys and (
+                not isfifo(dir_contents[cursor])
+                and exists(dir_contents[cursor])):
             options_screen = curses.newwin(25, 35, 3, 15)
 
             try:
