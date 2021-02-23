@@ -385,10 +385,11 @@ def scroll(screen):
     global show_hidden
 
     term_size = os.get_terminal_size()
+    term_lines = term_size.lines - 4
 
     first_file = 0
     last_file = 1
-    last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+    last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
     while True:
         row = 1
@@ -415,7 +416,11 @@ def scroll(screen):
 
 
         row += 1
-        screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
+        try:
+            screen.addstr(row, 0, str(cursor + 1) + "/" + str(len(dir_contents)))
+        except curses.error: # force continue on error
+            pass
+
         row += 1
 
         screen.refresh()
@@ -466,13 +471,13 @@ def scroll(screen):
                 cursor = 0
 
             first_file = 0
-            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+            last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         elif key_pressed == readchar.key.LEFT and cd != '/':
             cdback()
             cursor = 0
             first_file = 0
-            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+            last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         # enter pressed on anything other than a dir
         elif (key_pressed == readchar.key.ENTER or key_pressed == readchar.key.RIGHT) and (
@@ -525,7 +530,7 @@ def scroll(screen):
             list_files()
 
             first_file = 0
-            last_file = term_size.lines - 5 if len(dir_contents) > term_size.lines else len(dir_contents)
+            last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
 
 def help_menu():
