@@ -92,6 +92,7 @@ def list_files():
 
     except PermissionError:
         perm_error = True
+        dir_contents.append('../')
 
 
 # cd into .. without uglying the path
