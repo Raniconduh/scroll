@@ -18,6 +18,8 @@ The `--help` flag may be specified to scroll which will result in the help scree
 * Left Arrow or `h`: Move into the previous directory. e.g if the current directory is `/path/to/dir`, then the directory `/path/to` will be entered
 * `.` (Period): Hide or show dotfiles (toggle).
 * `!` (Exclamation Mark): Run a shell command
+* `g`: Go to the top of the directory
+* `G`: Go to the bottom of the directory
 
 
 # Installation
