@@ -29,6 +29,8 @@ open_keys = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
 back_keys = (readchar.key.LEFT, 'h')
 up_keys = (readchar.key.UP, 'k')
 down_keys = (readchar.key.DOWN, 'j')
+top_keys = ('g')
+bottom_keys = ('G')
 
 
 # if the current dir is not readable / gives a permission error
@@ -390,7 +392,7 @@ def scroll(screen):
 
     first_file = 0
     last_file = 1
-    last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
+    last_file = term_lines - 1 if len(dir_contents) > term_lines else len(dir_contents)
 
     while True:
         row = 1
@@ -523,6 +525,20 @@ def scroll(screen):
 
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
+
+        # jump to first dir entry
+        elif key_pressed in top_keys:
+            cursor = 0
+            d_len = len(dir_contents)
+            first_file = 0
+            last_file = term_lines - 5 if d_len > term_lines else d_len
+        # jump to last dir entry
+        elif key_pressed in bottom_keys:
+            d_len = len(dir_contents)
+            cursor = d_len - 1
+            if d_len > term_lines:
+                last_file = d_len
+                first_file = d_len - term_lines + 1
 
 
 def help_menu():
