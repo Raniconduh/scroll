@@ -30,4 +30,6 @@ Installing scroll is not necessary as it can be run immediatly via `./scroll.py`
 ## Todo:
 
 - add more options to file options menu
+- bug fixed / optimizations
+- clean up code
 
