@@ -158,7 +158,7 @@ def exists(item):
     """
     check if file exist i.e.e the last character is not '?'
     """
-    return item[-1] == '?'
+    return item[-1] != '?'
 
 
 def get_file_ext(item):
