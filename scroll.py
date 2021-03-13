@@ -388,7 +388,7 @@ def scroll(screen):
     global show_hidden
 
     term_size = os.get_terminal_size()
-    term_lines = term_size.lines - 4
+    term_lines = term_size.lines - 1
 
     first_file = 0
     last_file = 1
@@ -404,15 +404,16 @@ def scroll(screen):
 
         # print all the items of the dir
         for item in dir_contents[first_file:last_file]:
+            to_highlight = False
+            # highlight file name if the cursor is on it
             if cursor == dir_contents.index(item):
-                print_file_name(screen, row, item, highlight=True)
-                row += 1
-            else:
-                print_file_name(screen, row, item)
-                row += 1
+                to_highlight = True
+
+            print_file_name(screen, row, item, highlight=to_highlight)
+            row += 1
 
 
-        # highlight the file the cursor is on
+        # highlight the file the cursor is on if it is higher than len(dir_contents)
         if cursor > len(dir_contents) - 1:
             cursor = len(dir_contents) - 1
             print_file_name(screen, cursor + 3, dir_contents[cursor], highlight=True)
@@ -565,31 +566,12 @@ if __name__ == "__main__":
             help_menu()
             quit()
 
-        elif argv[1] == "..":
-            cd = cd.split('/')
-            cd = cd[:-2]
-            cd = '/'.join(cd)
-            cd += '/'
+        cd = os.path.abspath(argv[1])
+        cd += '/' if cd[-1] != '/' else ''
 
-        elif len(argv[1]) > 2 and argv[:2] == "..":
-            if argv[1][0] == '.' and argv[1][1] == '.' and argv[1][2] == '/':
-                cd = cd.split('/')
-                cd = cd[:-2]
-
-                tmp_argv = argv[1].split("/")
-
-                for segment in tmp_argv[1:]:
-                    cd.append(segment)
-
-                cd = '/'.join(cd)
-                cd += '/'
-
-        elif argv[1] == "~" or argv[:2] == "~/":
-            cd = os.path.expanduser(argv[1])
-            print(argv[1])
-
-        else:
-            cd = argv[1] + '/'
+    if not os.path.exists(cd):
+        print("Path does not exist")
+        quit(1)
 
     screen = curses.initscr()
     curses.curs_set(0)
