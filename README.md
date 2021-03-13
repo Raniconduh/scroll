@@ -23,7 +23,10 @@ The `--help` flag may be specified to scroll which will result in the help scree
 
 
 # Installation
-scroll depends on python3 and the module `readchar`. 
+scroll depends on python3 and the python module `readchar`. (Installable with `pip3 install readchar`)
+
+## Recommends
+To use scroll to its full potential, it is recomended to have a file viewer installed (default is `less`) and a text editor (default is `editor`).
 
 Installing scroll is not necessary as it can be run immediatly via `./scroll.py`, although you may install it to system somewhere in your path. e.g. `cp scroll.py <PATH>`, replacing `<PATH>` with any directory in your `PATH` environment variable.
 
