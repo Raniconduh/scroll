@@ -42,13 +42,13 @@ show_hidden = False
 
 def list_files():
     """
-    list all the files in the current dir
-    listed files will be appended to the dir_contents list/dict
-    files names may also end in special character:
-        ?) file does not exist?
-        /) file is a dir
-        @) file is a symbolic link
-        *) file is executable
+    list all the files in the current dir\n
+    listed files will be appended to the dir_contents list/dict\n
+    files names may also end in special character:\n
+        ?) file does not exist?\n
+        /) file is a dir\n
+        @) file is a symbolic link\n
+        *) file is executable\n
         |) file is pip / fifo
     """
     tmp_contents = {"dirs": [], "files": []}
@@ -114,31 +114,31 @@ def cdback():
 
 def isdir(item):
     """
-    checks if a file is a dir
+    checks if a file is a dir\n
     files ending in '/' are directories
     """
-    return True if item[-1] == '/' else False
+    return item[-1] == '/'
 
 
 def issymlink(item):
     """
-    check if a file is a symbolic link
+    check if a file is a symbolic link\n
     files ending with '@' are symlinks
     """
-    return True if item[-1] == '@' else False
+    return item[-1] == '@'
 
 
 def isexec(item):
     """
-    check if a file is executable
+    check if a file is executable\n
     files ending with '*' are executable
     """
-    return True if item[-1] == '*' else False
+    return item[-1] == '*'
 
 
 def isascii(item):
     """
-    check if a file is not anything special
+    check if a file is not anything special\n
     files that do not end in special characters are normal / ascii
     """
     if not isdir(item) and not issymlink(item) and not isexec(item):
@@ -148,23 +148,23 @@ def isascii(item):
 
 def isfifo(item):
     """
-    check if file is fifo aka named pipe
+    check if file is fifo aka named pipe\n
     files ending with '|' are fifos
     """
-    return True if item[-1] == '|' else False
+    return item[-1] == '|'
 
 
 def exists(item):
     """
     check if file exist i.e.e the last character is not '?'
     """
-    return False if item[-1] == '?' else True
+    return item[-1] == '?'
 
 
 def get_file_ext(item):
     """
-    return th extension of the file
-    e.g. 'file.txt' will return 'txt'
+    return th extension of the file\n
+    e.g. 'file.txt' will return 'txt'\n
     no extension e.g. 'file' will return None
     """
     item_split = item.split('.')
@@ -175,8 +175,8 @@ def get_file_ext(item):
 
 def print_file_name(screen, row, item, column=0, highlight=False):
     """
-    print a file name based on what kind of file it is
-    may also print a highlighted or non-highlited file
+    print a file name based on what kind of file it is\n
+    may also print a highlighted or non-highlited file\n
     this function is similar to curses.window.addstr()
     """
     if isdir(item):
@@ -374,7 +374,7 @@ def file_options(item, screen):
 
 def scroll(screen):
     """
-    the main file manager
+    the main file manager\n
     this will list all the files, allow commands, etc.
     """
     curses.curs_set(0)
@@ -543,7 +543,7 @@ def scroll(screen):
 
 def help_menu():
     """
-    prints the help text for the program
+    prints the help text for the program\n
     i.e. command line args, options, etc.
     """
     print(
