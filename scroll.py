@@ -264,9 +264,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["sh", "-c", f"less -N {cd + item}"])
+                    subprocess.run(["sh", "-c", f"less -N '{cd + item}'"])
                 else:
-                    subprocess.run(["sh", "-c", f"less -N {cd + item[:-1]}"])
+                    subprocess.run(["sh", "-c", f"less -N '{cd + item[:-1]}'"])
 
                 screen = curses.initscr()
                 return
@@ -275,9 +275,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["sh", "-c", f"editor {cd + item}"])
+                    subprocess.run(["sh", "-c", f"editor '{cd + item}'"])
                 else:
-                    subprocess.run(["sh", "-c", f"editor {cd + item[:-1]}"])
+                    subprocess.run(["sh", "-c", f"editor '{cd + item[:-1]}'"])
 
                 screen = curses.initscr()
                 return
@@ -293,9 +293,9 @@ def file_options(item, screen):
 
                 if inp.lower() == b'y':
                     if isascii(item):
-                        subprocess.run(["sh", "-c", f"rm -rf {cd + item}"])
+                        subprocess.run(["sh", "-c", f"rm -rf '{cd + item}'"])
                     else:
-                        subprocess.run(["sh", "-c", f"rm -rf {cd + item[:-1]}"])
+                        subprocess.run(["sh", "-c", f"rm -rf '{cd + item[:-1]}'"])
 
                     screen.clear()
                     screen.refresh()
@@ -332,7 +332,7 @@ def file_options(item, screen):
 
                     if user_assuredness.lower() == b"y":
                         subprocess.run([
-                            "sh", "-c", f"mv {cd + file_name} {cd + to_rename}"])
+                            "sh", "-c", f"mv '{cd + file_name}' '{cd + to_rename}'"])
                         screen.clear()
                         screen.refresh()
                         return
