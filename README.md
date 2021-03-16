@@ -2,6 +2,7 @@
 
 A small and simple console file manager
 
+![Scroll](https://imgur.com/fij9ZNR.png)
 
 # Use
 Using scroll is very simple as it has few commands and actually interacts with the user. It is best run using a 256 bit color terminal although it does also work in an 8 bit color terminal. (Monochrome terminals have not been tested).
