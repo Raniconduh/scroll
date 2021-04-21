@@ -12,6 +12,8 @@ dir_contents = []
 
 cd = os.getenv("PWD") + '/'
 
+EDITOR = os.getenv("EDITOR") if os.getenv("EDITOR") else "editor"
+
 # maybe remove these tuples and use mime type checking instead..
 MEDIA_EXTENSIONS = (
         "jpg", "jpeg", "png", "svg",
@@ -275,9 +277,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["sh", "-c", f"editor '{cd + item}'"])
+                    subprocess.run(["sh", "-c", f"{EDITOR} '{cd + item}'"])
                 else:
-                    subprocess.run(["sh", "-c", f"editor '{cd + item[:-1]}'"])
+                    subprocess.run(["sh", "-c", f"{EDITOR} '{cd + item[:-1]}'"])
 
                 screen = curses.initscr()
                 return
