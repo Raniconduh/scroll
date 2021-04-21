@@ -4,6 +4,7 @@ import readchar
 import os
 import subprocess
 import stat
+import sys
 from sys import argv
 import curses
 
@@ -41,6 +42,8 @@ perm_error = False
 # whether or not to show dotfiles
 show_hidden = False
 
+# whether or not to print the path name when scroll exits
+print_on_exit = False
 
 def list_files():
     """
@@ -559,20 +562,27 @@ def help_menu():
             "\n"
             "Options:\n"
             "  -h, --help\t\tPrint this screen and exit\n"
+            "  -p, --print\t\tPrint the last directory scroll was in when it exists\n"
             )
 
 
 if __name__ == "__main__":
     if len(argv) > 1:
-        if argv[1] == "--help" or argv[1] == "-h":
-            help_menu()
-            quit()
-
-        cd = os.path.abspath(argv[1])
-        cd += '/' if cd[-1] != '/' else ''
+        for arg in argv[1:]:
+            if arg == "--help" or arg == "-h":
+                help_menu()
+                quit()
+            elif arg == "--print" or arg == "-p":
+                print_on_exit = True
+            elif arg[0] == '-':
+                print(f"scroll: {arg}: Invalid argument", file=sys.stderr)
+                quit(1)
+            else:
+                cd = os.path.abspath(arg)
+                cd += '/' if cd[-1] != '/' else ''
 
     if not os.path.exists(cd):
-        print("Path does not exist")
+        print(f"scroll: {cd}: path does not exist", file=sys.stderr)
         quit(1)
 
     screen = curses.initscr()
@@ -615,4 +625,6 @@ if __name__ == "__main__":
     curses.echo()
     curses.curs_set(1)
     curses.endwin()
+    
+    if print_on_exit: print(cd)
 
