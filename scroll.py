@@ -298,13 +298,13 @@ def file_options(item, screen):
 
                 if inp.lower() == b'y':
                     if isascii(item):
-                        subprocess.run(["sh", "-c", f"rm -rf '{cd + item}'"])
+                        rem_path = cd + item
                     else:
-                        subprocess.run(["sh", "-c", f"rm -rf '{cd + item[:-1]}'"])
+                        rem_path = cd + item[:-1]
 
+                    os.path.exists(rem_path) and os.remove(rem_path)
                     screen.clear()
                     screen.refresh()
-
                     return
 
             elif "Rename" in options[cursor]:
@@ -336,8 +336,7 @@ def file_options(item, screen):
                     curses.noecho()
 
                     if user_assuredness.lower() == b"y":
-                        subprocess.run([
-                            "sh", "-c", f"mv '{cd + file_name}' '{cd + to_rename}'"])
+                        os.rename(cd + file_name, cd + to_rename)
                         screen.clear()
                         screen.refresh()
                         return
