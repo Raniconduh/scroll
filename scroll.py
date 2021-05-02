@@ -8,6 +8,7 @@ import sys
 from sys import argv
 import curses
 
+VERSION = "scroll 1.0"
 
 dir_contents = []
 
@@ -562,6 +563,7 @@ def help_menu():
             "Options:\n"
             "  -h, --help\t\tPrint this screen and exit\n"
             "  -p, --print\t\tPrint the last directory scroll was in when it exists\n"
+            "  -v, --verion\t\tPrint the version and exit\n"
             )
 
 
@@ -573,6 +575,9 @@ if __name__ == "__main__":
                 quit()
             elif arg == "--print" or arg == "-p":
                 print_on_exit = True
+            elif arg == "--version" or arg == "-v":
+                print(VERSION)
+                quit()
             elif arg[0] == '-':
                 print(f"scroll: {arg}: Invalid argument", file=sys.stderr)
                 quit(1)
