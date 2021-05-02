@@ -17,6 +17,7 @@ Using scroll is very simple as it has few commands and actually interacts with t
 
 * `-h`, `--help`              Print the help menu and exit 
 * `-p`, `--print`             When scroll exists, print the directory it was last in
+* `-v`, `--version`           Print the version and exit
 
 ### Commands
 
