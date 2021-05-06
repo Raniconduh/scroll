@@ -360,7 +360,7 @@ def file_options(item, screen):
                     else:
                         file_name = item[:-1]
 
-                    command += " " + cd + file_name
+                    command += f" '{cd + file_name}'"
 
                     curses.endwin()
                     try:
