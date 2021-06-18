@@ -36,12 +36,12 @@ ARCHIVE_EXTENSIONS = (
 
 
 # keypresses
-open_keys = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
-back_keys = (readchar.key.LEFT, 'h')
-up_keys = (readchar.key.UP, 'k')
-down_keys = (readchar.key.DOWN, 'j')
-top_keys = ('g')
-bottom_keys = ('G')
+OPEN_KEYS = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
+BACK_KEYS = (readchar.key.LEFT, 'h')
+UP_KEYS = (readchar.key.UP, 'k')
+DOWN_KEYS = (readchar.key.DOWN, 'j')
+TOP_KEYS = ('g')
+BOTTOM_KEYS = ('G')
 
 
 # if the current dir is not readable / gives a permission error
@@ -254,20 +254,20 @@ def file_options(item, screen):
         key_pressed = readchar.readkey()
 
         # up arrow pressed
-        if key_pressed in up_keys and cursor > 0:
+        if key_pressed in UP_KEYS and cursor > 0:
             cursor -= 1
 
         # down arrow pressed
-        elif key_pressed in down_keys and cursor < len(options) - 1:
+        elif key_pressed in DOWN_KEYS and cursor < len(options) - 1:
             cursor += 1
 
         # 'q' key or left arrow pressed exits the file menu
-        elif key_pressed in back_keys or key_pressed == 'q':
+        elif key_pressed in BACK_KEYS or key_pressed == 'q':
             screen.clear()
             screen.refresh()
             break
 
-        elif key_pressed in open_keys:
+        elif key_pressed in OPEN_KEYS:
             if "View" in options[cursor]:
                 curses.endwin()
 
@@ -458,13 +458,13 @@ def scroll(screen):
         if key_pressed == readchar.key.CTRL_C or key_pressed == 'q':
             break
         # up arrow key pressed
-        elif key_pressed in up_keys and cursor > 0:
+        elif key_pressed in UP_KEYS and cursor > 0:
             cursor -= 1
         # down arrow key pressed
-        elif key_pressed in down_keys and cursor < len(dir_contents) - 1:
+        elif key_pressed in DOWN_KEYS and cursor < len(dir_contents) - 1:
             cursor += 1
         # enter is pressed on a dir
-        elif key_pressed in open_keys and isdir(dir_contents[cursor]):
+        elif key_pressed in OPEN_KEYS and isdir(dir_contents[cursor]):
             if dir_contents[cursor] == "../":
                 cdback()
                 cursor = 0
@@ -479,14 +479,14 @@ def scroll(screen):
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
-        elif key_pressed in back_keys  and cd != '/':
+        elif key_pressed in BACK_KEYS  and cd != '/':
             cdback()
             cursor = 0
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         # enter pressed on anything other than a dir
-        elif key_pressed in open_keys and (
+        elif key_pressed in OPEN_KEYS and (
                 not isfifo(dir_contents[cursor])
                 and exists(dir_contents[cursor])):
             options_screen = curses.newwin(25, 35, 3, 15)
@@ -538,18 +538,18 @@ def scroll(screen):
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         # jump to first dir entry
-        elif key_pressed in top_keys:
+        elif key_pressed in TOP_KEYS:
             cursor = 0
             d_len = len(dir_contents)
             first_file = 0
             last_file = term_lines - 5 if d_len > term_lines else d_len
         # jump to last dir entry
-        elif key_pressed in bottom_keys:
+        elif key_pressed in BOTTOM_KEYS:
             d_len = len(dir_contents)
             cursor = d_len - 1
             if d_len > term_lines:
                 last_file = d_len
-                first_file = d_len - term_lines + 1
+                first_file = d_len - term_lines + 5
 
 
 def help_menu():
