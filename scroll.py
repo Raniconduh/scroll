@@ -7,6 +7,8 @@ import stat
 import sys
 from sys import argv
 import curses
+import platform
+import mimetypes
 
 VERSION = "scroll 1.0"
 
@@ -16,12 +18,17 @@ cd = os.getenv("PWD") + '/'
 
 EDITOR = os.getenv("EDITOR") if os.getenv("EDITOR") else "editor"
 
+MEDIA_OPEN = "open" if platform.system() == "Darwin" else "xdg-open"
+
 # maybe remove these tuples and use mime type checking instead..
 MEDIA_EXTENSIONS = (
         "jpg", "jpeg", "png", "svg",
         "m4v", "mp4", "mkv", "m4a",
         "mp3", "webm"
 )
+
+MEDIA_MIMES = ("video", "image")
+
 ARCHIVE_EXTENSIONS = (
         "tar", "xz", "bz2", "gz",
         "zip", "rar"
@@ -226,7 +233,12 @@ def file_options(item, screen):
     screen.refresh()
 
     cursor = 0
+    
+    mime = mimetypes.guess_type(f"{cd}/{item}")[0]
+    if mime: mime = mime.partition('/')[0].lower()
+
     options = ["View File", "Edit File", "Delete File", "Rename File", "Open File with Command"]
+    if mime in MEDIA_MIMES: options.remove("Edit File") # cannot edit media files
 
     while True:
         row = 0
@@ -236,7 +248,6 @@ def file_options(item, screen):
         screen.border('|', 1, 1, 1, 1, 1, 1, 1)
         
         print_file_name(screen, row, item, column=column)
-
         row += 2
 
         for option in options:
@@ -269,10 +280,15 @@ def file_options(item, screen):
             if "View" in options[cursor]:
                 curses.endwin()
 
+                open_cmd = 'less -N'
+
+                if mime in MEDIA_MIMES:
+                    open_cmd = MEDIA_OPEN
+
                 if isascii(item):
-                    subprocess.run(["sh", "-c", f"less -N '{cd + item}'"])
+                    os.system(f"{open_cmd} '{cd}{item}'")
                 else:
-                    subprocess.run(["sh", "-c", f"less -N '{cd + item[:-1]}'"])
+                    os.system(f"{open_cmd} '{cd}{item[:-1]}'")
 
                 screen = curses.initscr()
                 return
@@ -281,9 +297,9 @@ def file_options(item, screen):
                 curses.endwin()
 
                 if isascii(item):
-                    subprocess.run(["sh", "-c", f"{EDITOR} '{cd + item}'"])
+                    os.system(f"{EDITOR} '{cd}{item}'")
                 else:
-                    subprocess.run(["sh", "-c", f"{EDITOR} '{cd + item[:-1]}'"])
+                    os.system(f"{EDITOR} '{cd}{item[:-1]}'")
 
                 screen = curses.initscr()
                 return
@@ -443,8 +459,6 @@ def scroll(screen):
         elif cursor == first_file + 2 and first_file > 0 and last_file > 9:
             first_file -= 1
             last_file -= 1
-
-
 
             dir_contents = []
             list_files()
