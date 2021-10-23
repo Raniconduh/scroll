@@ -14,7 +14,7 @@ VERSION = "scroll 1.0"
 
 dir_contents = []
 
-cd = os.getenv("PWD") + '/'
+cd = os.getenv("PWD")
 
 EDITOR = os.getenv("EDITOR") if os.getenv("EDITOR") else "editor"
 
@@ -34,7 +34,6 @@ ARCHIVE_EXTENSIONS = (
         "zip", "rar"
 )
 
-
 # keypresses
 OPEN_KEYS = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
 BACK_KEYS = (readchar.key.LEFT, 'h')
@@ -53,16 +52,26 @@ show_hidden = False
 # whether or not to print the path name when scroll exits
 print_on_exit = False
 
+
+class FileType():
+    F_UKNWN = 0
+    F_DIR = 1
+    F_LNK = 2
+    F_FIFO = 3
+    F_REG = 4
+
+
+class FileEntry():
+    f_name = ""
+    f_type = FileType.F_REG
+    f_exec = False
+
+
 def list_files():
     """
     list all the files in the current dir\n
     listed files will be appended to the dir_contents list/dict\n
-    files names may also end in special character:\n
-        ?) file does not exist?\n
-        /) file is a dir\n
-        @) file is a symbolic link\n
-        *) file is executable\n
-        |) file is pip / fifo
+    as a FileEntry object
     """
     tmp_contents = {"dirs": [], "files": []}
 
@@ -77,27 +86,30 @@ def list_files():
             # do not append dotfiles to list if show_hidden is false
             if not show_hidden and (item.name[0] == '.') : pass
 
-            elif not os.access(item, os.F_OK):
-                tmp_contents["files"].append(item.name + '?')
+            i = FileEntry()
+            i.f_name = item.name
 
+            if not os.access(item, os.F_OK):
+                i.f_type = FileType.F_UKNWN
             elif item.is_dir():
-                tmp_contents["dirs"].append(item.name + "/")
-
+                i.f_type = FileType.F_DIR
             else:
                 if item.is_symlink():
-                    tmp_contents["files"].append(item.name + "@")
-
-                elif os.access(item.path, os.X_OK):
-                    tmp_contents["files"].append(item.name + "*")
-
+                    i.f_type = FileType.F_LNK
                 elif stat.S_ISFIFO(os.stat(item.path).st_mode):
-                    tmp_contents["files"].append(item.name + "|")
-
+                    i.f_type = FileType.F_FIFO
                 else:
-                    tmp_contents["files"].append(item.name)
+                    i.f_type = FileType.F_REG
 
-        tmp_contents["dirs"].sort()
-        tmp_contents["files"].sort()
+                if os.access(item.path, os.X_OK): i.f_exec = True
+
+            if i.f_type == FileType.F_DIR:
+                tmp_contents["dirs"].append(i)
+            else:
+                tmp_contents["files"].append(i)
+
+        tmp_contents["dirs"].sort(key=lambda n:n.f_name)
+        tmp_contents["files"].sort(key=lambda n:n.f_name)
 
         for tmp_dir in tmp_contents["dirs"]:
             dir_contents.append(tmp_dir)
@@ -105,10 +117,15 @@ def list_files():
         for tmp_file in tmp_contents["files"]:
             dir_contents.append(tmp_file)
         
-        if not len(dir_contents) : dir_contents.append("../")
     except PermissionError:
         perm_error = True
-        dir_contents.append('../')
+
+    if not len(dir_contents):
+        i = FileEntry()
+        i.f_name = ".."
+        i.f_type = FileType.F_DIR
+        dir_contents.append(i)
+
 
 
 # cd into .. without uglying the path
@@ -119,60 +136,11 @@ def cdback():
     global cd
     global dir_contents
 
-    # remove the last two segments of the path and append a '/'
-    cd = '/'.join(cd.split('/')[:-2]) + '/'
+    # remove the last segment of the path
+    cd = '/'.join(cd.split('/')[:-1])
+    if not cd: cd = '/'
     dir_contents = []
     list_files()
-
-
-def isdir(item):
-    """
-    checks if a file is a dir\n
-    files ending in '/' are directories
-    """
-    return item[-1] == '/'
-
-
-def issymlink(item):
-    """
-    check if a file is a symbolic link\n
-    files ending with '@' are symlinks
-    """
-    return item[-1] == '@'
-
-
-def isexec(item):
-    """
-    check if a file is executable\n
-    files ending with '*' are executable
-    """
-    return item[-1] == '*'
-
-
-def isascii(item):
-    """
-    check if a file is not anything special\n
-    files that do not end in special characters are normal / ascii
-    """
-    if not isdir(item) and not issymlink(item) and not isexec(item):
-        return True
-    return False
-
-
-def isfifo(item):
-    """
-    check if file is fifo aka named pipe\n
-    files ending with '|' are fifos
-    """
-    return item[-1] == '|'
-
-
-def exists(item):
-    """
-    check if file exist i.e.e the last character is not '?'
-    """
-    return item[-1] != '?'
-
 
 def get_file_ext(item):
     """
@@ -180,7 +148,7 @@ def get_file_ext(item):
     e.g. 'file.txt' will return 'txt'\n
     no extension e.g. 'file' will return None
     """
-    item_split = item.split('.')
+    item_split = item.f_name.split('.')
     if len(item_split) == 1:
         return None
     return item_split[-1].lower()
@@ -190,27 +158,33 @@ def print_file_name(screen, row, item, column=0, highlight=False):
     """
     print a file name based on what kind of file it is\n
     may also print a highlighted or non-highlited file\n
-    this function is similar to curses.window.addstr()
     """
 
     color = 14
-    ext = True
+    ident = ''
 
     # assign colors and whether or not th file is special
-    if isdir(item):                                color = 1
-    elif issymlink(item):                          color = 3
-    elif isexec(item):                             color = 5
-    elif get_file_ext(item) in MEDIA_EXTENSIONS:   color, ext = 7,  False
-    elif isfifo(item):                             color = 9
-    elif get_file_ext(item) in ARCHIVE_EXTENSIONS: color, ext = 11, False
-    elif not exists(item):                         color = 11
-    else:                                          color, ext = 13, False
+    if item.f_type == FileType.F_DIR:
+        color, ident = 1, '/'
+    elif item.f_type == FileType.F_LNK:
+        color, ident = 3, '@'
+    elif item.f_exec:
+        color, ident = 5, '*'
+    elif get_file_ext(item) in MEDIA_EXTENSIONS:
+        color = 7
+    elif item.f_type == FileType.F_FIFO:
+        color, ident = 9, '|'
+    elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
+        color = 11
+    elif item.f_type == FileType.F_UKNWN:
+        color, ident = 11, '?'
+    else:
+        color= 13
 
     if highlight: color += 1
-    if not ext: screen.addstr(row, column, item, curses.color_pair(color))
-    else:
-        screen.addstr(row, column, item[:-1], curses.color_pair(color))
-        screen.addstr(row, len(item[:-1]) + column, item[-1])
+
+    screen.addstr(row, column, item.f_name, curses.color_pair(color))
+    screen.addstr(row, len(item.f_name) + column, ident)
  
 
 def file_options(item, screen):
@@ -225,7 +199,7 @@ def file_options(item, screen):
 
     cursor = 0
     
-    mime = mimetypes.guess_type(f"{cd}/{item}")[0]
+    mime = mimetypes.guess_type(f"{cd}/{item.f_name}")[0]
     if mime: mime = mime.partition('/')[0].lower()
 
     options = ["View File", "Edit File", "Delete File", "Rename File", "Open File with Command"]
@@ -243,11 +217,10 @@ def file_options(item, screen):
 
         for option in options:
             if options.index(option) == cursor:
-                print_file_name(screen, row, option, column=column, highlight=True)
-                row += 1
+                screen.addstr(row, column, option, curses.color_pair(14))
             else:
-                print_file_name(screen, row, option, column=column)
-                row += 1
+                screen.addstr(row, column, option)
+            row += 1
 
         screen.refresh()
 
@@ -276,10 +249,7 @@ def file_options(item, screen):
                 if mime in MEDIA_MIMES:
                     open_cmd = MEDIA_OPEN
 
-                if isascii(item):
-                    os.system(f"{open_cmd} '{cd}{item}'")
-                else:
-                    os.system(f"{open_cmd} '{cd}{item[:-1]}'")
+                    os.system(f"{open_cmd} '{cd}/{item.f_name}'")
 
                 screen = curses.initscr()
                 return
@@ -287,10 +257,7 @@ def file_options(item, screen):
             elif "Edit" in options[cursor]:
                 curses.endwin()
 
-                if isascii(item):
-                    os.system(f"{EDITOR} '{cd}{item}'")
-                else:
-                    os.system(f"{EDITOR} '{cd}{item[:-1]}'")
+                os.system(f"{EDITOR} '{cd}/{item.f_name}'")
 
                 screen = curses.initscr()
                 return
@@ -305,10 +272,7 @@ def file_options(item, screen):
                 curses.noecho()
 
                 if inp.lower() == b'y':
-                    if isascii(item):
-                        rem_path = cd + item
-                    else:
-                        rem_path = cd + item[:-1]
+                    rem_path = f"{cd}/{item.f_name}"
 
                     os.path.exists(rem_path) and os.remove(rem_path)
                     screen.clear()
@@ -316,10 +280,7 @@ def file_options(item, screen):
                     return
 
             elif "Rename" in options[cursor]:
-                if isascii(item):
-                    file_name = item
-                else:
-                    file_name = item[:-1]
+                file_name = item.f_name
 
                 screen.addstr(row, column, f"Rename file '{file_name}' to what? : ")
                 row += 2
@@ -344,7 +305,7 @@ def file_options(item, screen):
                     curses.noecho()
 
                     if user_assuredness.lower() == b"y":
-                        os.rename(cd + file_name, cd + to_rename)
+                        os.rename(f"{cd}/{file_name}", f"{cd}/{to_rename}")
                         screen.clear()
                         screen.refresh()
                         return
@@ -362,12 +323,9 @@ def file_options(item, screen):
                 # make sure command in not empty before continuing
                 if command:
 
-                    if isascii(item):
-                        file_name = item
-                    else:
-                        file_name = item[:-1]
+                    file_name = item.f_name
 
-                    command += f" '{cd + file_name}'"
+                    command += f" '{cd}/{file_name}'"
 
                     curses.endwin()
                     try:
@@ -464,13 +422,13 @@ def scroll(screen):
         elif key_pressed in DOWN_KEYS and cursor < len(dir_contents) - 1:
             cursor += 1
         # enter is pressed on a dir
-        elif key_pressed in OPEN_KEYS and isdir(dir_contents[cursor]):
-            if dir_contents[cursor] == "../":
+        elif key_pressed in OPEN_KEYS and dir_contents[cursor].f_type == FileType.F_DIR:
+            if dir_contents[cursor].f_name == "..":
                 cdback()
                 cursor = 0
 
             else:
-                cd += dir_contents[cursor]
+                cd += "/" + dir_contents[cursor].f_name
 
                 dir_contents = []
                 list_files()
@@ -487,8 +445,8 @@ def scroll(screen):
 
         # enter pressed on anything other than a dir
         elif key_pressed in OPEN_KEYS and (
-                not isfifo(dir_contents[cursor])
-                and exists(dir_contents[cursor])):
+                dir_contents[cursor].f_type != FileType.F_FIFO
+                and dir_contents[cursor].f_type != FileType.F_UKNWN):
             options_screen = curses.newwin(25, 35, 3, 15)
 
             try:
@@ -588,7 +546,7 @@ if __name__ == "__main__":
                 quit(1)
             else:
                 cd = os.path.abspath(arg)
-                cd += '/' if cd[-1] != '/' else ''
+                if cd[-1] == '/' and cd != '/': cd = cd[:-1]
 
     if not os.path.exists(cd):
         print(f"scroll: {cd}: path does not exist", file=sys.stderr)
@@ -597,7 +555,6 @@ if __name__ == "__main__":
     screen = curses.initscr()
     curses.curs_set(0)
     curses.noecho()
-    curses.cbreak()
 
     curses.start_color()
 
@@ -630,7 +587,6 @@ if __name__ == "__main__":
     screen.clear()
     screen.refresh()
 
-    curses.nocbreak()
     curses.echo()
     curses.curs_set(1)
     curses.endwin()
