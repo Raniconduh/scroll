@@ -84,7 +84,7 @@ def list_files():
 
         for item in items:
             # do not append dotfiles to list if show_hidden is false
-            if not show_hidden and (item.name[0] == '.') : pass
+            if not show_hidden and (item.name[0] == '.'): continue
 
             i = FileEntry()
             i.f_name = item.name
@@ -160,30 +160,30 @@ def print_file_name(screen, row, item, column=0, highlight=False):
     may also print a highlighted or non-highlited file\n
     """
 
-    color = 14
+    color = 0
     ident = ''
 
     # assign colors and whether or not th file is special
     if item.f_type == FileType.F_DIR:
         color, ident = 1, '/'
     elif item.f_type == FileType.F_LNK:
-        color, ident = 3, '@'
+        color, ident = 2, '@'
     elif item.f_exec:
-        color, ident = 5, '*'
+        color, ident = 3, '*'
     elif get_file_ext(item) in MEDIA_EXTENSIONS:
-        color = 7
+        color = 4
     elif item.f_type == FileType.F_FIFO:
-        color, ident = 9, '|'
+        color, ident = 5, '|'
     elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
-        color = 11
+        color = 6
     elif item.f_type == FileType.F_UKNWN:
-        color, ident = 11, '?'
+        color, ident = 6, '?'
     else:
-        color= 13
+        color = 7
+    color = curses.color_pair(color)
+    if highlight: color |= curses.A_REVERSE
 
-    if highlight: color += 1
-
-    screen.addstr(row, column, item.f_name, curses.color_pair(color))
+    screen.addstr(row, column, item.f_name, color)
     screen.addstr(row, len(item.f_name) + column, ident)
  
 
@@ -559,25 +559,12 @@ if __name__ == "__main__":
     curses.start_color()
 
     curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_BLUE)
-
-    curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_CYAN)
-
-    curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_GREEN)
-
-    curses.init_pair(7, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-    curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
-
-    curses.init_pair(9, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-    curses.init_pair(10, curses.COLOR_BLACK, curses.COLOR_YELLOW)
-
-    curses.init_pair(11, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(12, curses.COLOR_BLACK, curses.COLOR_RED)
-
-    curses.init_pair(13, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(14, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
     try:
         scroll(screen)
