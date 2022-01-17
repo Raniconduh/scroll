@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import readchar
 import os
 import subprocess
 import stat
@@ -35,12 +34,12 @@ ARCHIVE_EXTENSIONS = (
 )
 
 # keypresses
-OPEN_KEYS = (readchar.key.ENTER, readchar.key.RIGHT,  'l')
-BACK_KEYS = (readchar.key.LEFT, 'h')
-UP_KEYS = (readchar.key.UP, 'k')
-DOWN_KEYS = (readchar.key.DOWN, 'j')
-TOP_KEYS = ('g')
-BOTTOM_KEYS = ('G')
+OPEN_KEYS = (curses.KEY_ENTER, ord('\n'), curses.KEY_RIGHT, ord('l'))
+BACK_KEYS = (curses.KEY_LEFT, ord('h'))
+UP_KEYS = (curses.KEY_UP, ord('k'))
+DOWN_KEYS = (curses.KEY_DOWN, ord('j'))
+TOP_KEYS = (ord('g'),)
+BOTTOM_KEYS = (ord('G'),)
 
 
 # if the current dir is not readable / gives a permission error
@@ -193,6 +192,7 @@ def file_options(item, screen):
     """
     curses.curs_set(0)
     curses.start_color()
+    screen.keypad(True)
 
     screen.clear()
     screen.refresh()
@@ -215,27 +215,28 @@ def file_options(item, screen):
         print_file_name(screen, row, item, column=column)
         row += 2
 
-        for option in options:
-            if options.index(option) == cursor:
-                screen.addstr(row, column, option, curses.color_pair(14))
+        for option in range(len(options)):
+            if option == cursor:
+                screen.addstr(row, column, options[option],
+                        curses.color_pair(7) | curses.A_REVERSE)
             else:
-                screen.addstr(row, column, option)
+                screen.addstr(row, column, options[option])
             row += 1
 
         screen.refresh()
 
-        key_pressed = readchar.readkey()
+        key_pressed = screen.getch()
 
         # up arrow pressed
-        if key_pressed in UP_KEYS and cursor > 0:
-            cursor -= 1
+        if key_pressed in UP_KEYS:
+            if cursor > 0: cursor -= 1
 
         # down arrow pressed
-        elif key_pressed in DOWN_KEYS and cursor < len(options) - 1:
-            cursor += 1
+        elif key_pressed in DOWN_KEYS:
+            if cursor < len(options) - 1: cursor += 1
 
         # 'q' key or left arrow pressed exits the file menu
-        elif key_pressed in BACK_KEYS or key_pressed == 'q':
+        elif key_pressed in BACK_KEYS or key_pressed == ord('q'):
             screen.clear()
             screen.refresh()
             break
@@ -399,7 +400,7 @@ def scroll(screen):
 
         screen.refresh()
 
-        key_pressed = readchar.readkey()
+        key_pressed = screen.getch()
 
         # scroll terminal if needed
         if cursor == last_file - 3 and last_file < len(dir_contents):
@@ -413,16 +414,17 @@ def scroll(screen):
             list_files()
 
         # quit options
-        if key_pressed == readchar.key.CTRL_C or key_pressed == 'q':
+        if key_pressed == ord('q'):
             break
         # up arrow key pressed
-        elif key_pressed in UP_KEYS and cursor > 0:
-            cursor -= 1
+        elif key_pressed in UP_KEYS:
+            if cursor > 0: cursor -= 1
         # down arrow key pressed
-        elif key_pressed in DOWN_KEYS and cursor < len(dir_contents) - 1:
-            cursor += 1
+        elif key_pressed in DOWN_KEYS:
+            if cursor < len(dir_contents) - 1: cursor += 1
         # enter is pressed on a dir
         elif key_pressed in OPEN_KEYS and dir_contents[cursor].f_type == FileType.F_DIR:
+
             if dir_contents[cursor].f_name == "..":
                 cdback()
                 cursor = 0
@@ -437,16 +439,19 @@ def scroll(screen):
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
-        elif key_pressed in BACK_KEYS  and cd != '/':
+        elif key_pressed in BACK_KEYS:
+            if cd == '/': continue
+
             cdback()
             cursor = 0
             first_file = 0
             last_file = term_lines - 5 if len(dir_contents) > term_lines else len(dir_contents)
 
         # enter pressed on anything other than a dir
-        elif key_pressed in OPEN_KEYS and (
-                dir_contents[cursor].f_type != FileType.F_FIFO
-                and dir_contents[cursor].f_type != FileType.F_UKNWN):
+        elif key_pressed in OPEN_KEYS:
+            if dir_contents[cursor].f_type == FileType.F_FIFO or (
+            dir_contents[cursor].f_type == FileType.F_UKNWN): continue
+
             options_screen = curses.newwin(25, 35, 3, 15)
 
             try:
@@ -460,7 +465,7 @@ def scroll(screen):
             screen.clear()
 
         # run a command on '!''
-        elif key_pressed == '!':
+        elif key_pressed == ord('!'):
             row -= 1
             screen.addstr(row, 0, "cmd: ")
 
@@ -487,7 +492,7 @@ def scroll(screen):
                 list_files()
 
         # toggle showing / hiding dotfiles
-        elif key_pressed == '.':
+        elif key_pressed == ord('.'):
             show_hidden = not show_hidden
             dir_contents = []
             list_files()
@@ -555,6 +560,7 @@ if __name__ == "__main__":
     screen = curses.initscr()
     curses.curs_set(0)
     curses.noecho()
+    screen.keypad(True)
 
     curses.start_color()
 
