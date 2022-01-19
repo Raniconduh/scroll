@@ -32,12 +32,10 @@ Using scroll is very simple as it has few commands and actually interacts with t
 
 
 ## Installation
-scroll depends on python3 and the python module `readchar`. (Installable with `pip3 install readchar`)
+scroll depends solely on python3. As a lone file, it can be easily copied to a directory on the `PATH` environment variable for quick access.
 
 ### Recommends
 To use scroll to its full potential, it is recommended to have a file viewer installed (default is `less`) and a text editor (default is `editor`).
-
-Installing scroll is not necessary as it can be run immediately via `./scroll.py`, although you may install it to system somewhere in your path. E.g. `cp scroll.py <PATH>`, replacing `<PATH>` with any directory in your `PATH` environment variable.
 
 ### Todo:
 

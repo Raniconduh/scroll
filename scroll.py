@@ -95,7 +95,7 @@ class FileEntry():
         if self.f_type in FileType.F_IDENTS:
             return FileType.F_IDENTS[self.f_type]
         if self.f_exec: return '*'
-        
+
         return ''
 
 
