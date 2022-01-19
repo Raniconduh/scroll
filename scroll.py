@@ -83,7 +83,8 @@ class FileEntry():
     def color(self):
         if self.f_type in FileType.F_COLORS:
             return FileType.F_COLORS[self.f_type]
-        ext = get_file_ext(self)
+        ext = self.f_name.split('.')
+        ext = None if len(ext) == 1 else ext[-1]
         if ext in FileType.F_MEDIA_EXTS:   return 4 # purple
         if ext in FileType.F_ARCHIVE_EXTS: return 6 # red
 
@@ -155,17 +156,6 @@ def cdback():
     if not cd: cd = '/'
     dir_contents = []
     list_files()
-
-def get_file_ext(item):
-    """
-    return th extension of the file\n
-    e.g. 'file.txt' will return 'txt'\n
-    no extension e.g. 'file' will return None
-    """
-    item_split = item.f_name.split('.')
-    if len(item_split) == 1:
-        return None
-    return item_split[-1].lower()
 
 
 def print_file_name(screen, row, item, column=0, highlight=False):
