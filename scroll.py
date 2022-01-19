@@ -19,19 +19,6 @@ EDITOR = os.getenv("EDITOR") if os.getenv("EDITOR") else "editor"
 
 MEDIA_OPEN = "open" if platform.system() == "Darwin" else "xdg-open"
 
-# maybe remove these tuples and use mime type checking instead..
-MEDIA_EXTENSIONS = (
-        "jpg", "jpeg", "png", "svg",
-        "m4v", "mp4", "mkv", "m4a",
-        "mp3", "webm"
-)
-
-MEDIA_MIMES = ("video", "image")
-
-ARCHIVE_EXTENSIONS = (
-        "tar", "xz", "bz2", "gz",
-        "zip", "rar"
-)
 
 # keypresses
 OPEN_KEYS = (curses.KEY_ENTER, ord('\n'), curses.KEY_RIGHT, ord('l'))
@@ -59,11 +46,57 @@ class FileType():
     F_FIFO = 3
     F_REG = 4
 
+    F_COLORS = {F_UKNWN: 6, F_DIR: 1, F_LNK: 2, F_FIFO: 5}
+    F_IDENTS = {F_UKNWN: '?', F_DIR: '/', F_LNK: '@', F_FIFO: '|', F_REG: ''}
+    F_MEDIA_EXTS = (
+        "jpg", "jpeg", "png", "svg", "m4v", "mp4",
+        "mkv", "m4a",  "mp3", "webm"
+    )
+    F_ARCHIVE_EXTS = (
+        "tar", "xz",   "bz2", "gz",  "zip", "rar"
+    )
+    F_MEDIA_MIMES = ("video", "image")
 
 class FileEntry():
     f_name = ""
     f_type = FileType.F_REG
     f_exec = False
+
+    def __init__(self, de):
+        if de == None:
+            self.f_name = ".."
+            self.f_type = FileType.F_DIR
+            return
+
+        self.f_name = de.name
+
+        if not os.access(de, os.F_OK):  self.f_type = FileType.F_UKNWN
+        elif de.is_dir():               self.f_type = FileType.F_DIR
+        elif de.is_symlink():           self.f_type = FileType.F_LNK
+        elif stat.S_ISFIFO(os.stat(de.path).st_mode):
+            self.f_type = FileType.F_FIFO
+        else:                           self.f_type = FileType.F_REG
+
+        if self.f_type != FileType.F_DIR and os.access(de.path, os.X_OK):
+            self.f_exec = True
+
+    def color(self):
+        if self.f_type in FileType.F_COLORS:
+            return FileType.F_COLORS[self.f_type]
+        ext = get_file_ext(self)
+        if ext in FileType.F_MEDIA_EXTS:   return 4 # purple
+        if ext in FileType.F_ARCHIVE_EXTS: return 6 # red
+
+        if self.f_exec: return 3 # green
+
+        return 7 # regular file -- white
+
+    def ident(self):
+        if self.f_type in FileType.F_IDENTS:
+            return FileType.F_IDENTS[self.f_type]
+        if self.f_exec: return '*'
+        
+        return ''
 
 
 def list_files():
@@ -85,22 +118,7 @@ def list_files():
             # do not append dotfiles to list if show_hidden is false
             if not show_hidden and (item.name[0] == '.'): continue
 
-            i = FileEntry()
-            i.f_name = item.name
-
-            if not os.access(item, os.F_OK):
-                i.f_type = FileType.F_UKNWN
-            elif item.is_dir():
-                i.f_type = FileType.F_DIR
-            else:
-                if item.is_symlink():
-                    i.f_type = FileType.F_LNK
-                elif stat.S_ISFIFO(os.stat(item.path).st_mode):
-                    i.f_type = FileType.F_FIFO
-                else:
-                    i.f_type = FileType.F_REG
-
-                if os.access(item.path, os.X_OK): i.f_exec = True
+            i = FileEntry(item)
 
             if i.f_type == FileType.F_DIR:
                 tmp_contents["dirs"].append(i)
@@ -120,11 +138,8 @@ def list_files():
         perm_error = True
 
     if not len(dir_contents):
-        i = FileEntry()
-        i.f_name = ".."
-        i.f_type = FileType.F_DIR
+        i = FileEntry(None)
         dir_contents.append(i)
-
 
 
 # cd into .. without uglying the path
@@ -159,26 +174,12 @@ def print_file_name(screen, row, item, column=0, highlight=False):
     may also print a highlighted or non-highlited file\n
     """
 
-    color = 0
-    ident = ''
+    color = item.color()
+    ident = item.ident()
 
-    # assign colors and whether or not th file is special
-    if item.f_type == FileType.F_DIR:
-        color, ident = 1, '/'
-    elif item.f_type == FileType.F_LNK:
-        color, ident = 2, '@'
-    elif item.f_exec:
-        color, ident = 3, '*'
-    elif get_file_ext(item) in MEDIA_EXTENSIONS:
-        color = 4
-    elif item.f_type == FileType.F_FIFO:
-        color, ident = 5, '|'
-    elif get_file_ext(item) in ARCHIVE_EXTENSIONS:
-        color = 6
-    elif item.f_type == FileType.F_UKNWN:
-        color, ident = 6, '?'
-    else:
-        color = 7
+    if item.f_exec:
+        ident = '*'
+
     color = curses.color_pair(color)
     if highlight: color |= curses.A_REVERSE
 
@@ -203,7 +204,8 @@ def file_options(item, screen):
     if mime: mime = mime.partition('/')[0].lower()
 
     options = ["View File", "Edit File", "Delete File", "Rename File", "Open File with Command"]
-    if mime in MEDIA_MIMES: options.remove("Edit File") # cannot edit media files
+    if mime in FileType.F_MEDIA_MIMES:
+        options.remove("Edit File") # cannot edit media files
 
     while True:
         row = 0
@@ -247,7 +249,7 @@ def file_options(item, screen):
 
                 open_cmd = 'less -N'
 
-                if mime in MEDIA_MIMES:
+                if mime in FileType.F_MEDIA_MIMES:
                     open_cmd = MEDIA_OPEN
 
                     os.system(f"{open_cmd} '{cd}/{item.f_name}'")
